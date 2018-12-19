@@ -29,10 +29,10 @@ To start migrating databases:
 >cd /root/migration_scripts  
 >rm state_file_FCT_PI  
 
-- start script(1nce):
+- start script(for one iteration):
 >python3 mssql_to_influx.py  
-- start script(multiple iterations):
->./load_database.sh  
+- start script(for multiple iterations):
+>./load_database.sh  5  (to copy 5 blocks of data(50000 points), with no parametrest will run 1000 iterations)
 
 
 To view data in influxdb:
