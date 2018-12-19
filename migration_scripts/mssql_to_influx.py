@@ -37,7 +37,7 @@ def get_data_from_mssql(driver:str,host: str, port: str, username: str, password
     return data
 
 
-with open('config.json', 'r') as f:
+with open('/root/connectin/migration_scripts/config.json', 'r') as f:
     main_config = json.load(f)
 
 if __name__ == '__main__':
