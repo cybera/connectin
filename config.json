@@ -1,7 +1,8 @@
 {
     "block_size"       : "10000",
     "driver"           : "/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.2.so.0.1",
-    "state_file_path"  : "/root/connectin/migration_scripts/state_file_",
+    "state_file_path"  : "/root/connectin/data/state_file_",
+    "data_file_path"   : "/root/connectin/data/",
     "mssql_host"       : "",
     "mssql_port"       : "1433",
     "mssql_username"   : "cybera_sql",
