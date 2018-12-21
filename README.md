@@ -1,4 +1,5 @@
 ## ConnectIn project
+
 ### Migration scripts
 `mssql_to_influx.py` 
 This script takes input configuration for mssql/influx from json file: config.json.
@@ -11,8 +12,8 @@ It writes down the lates timestamp it used into state file (state_file_FCT_PI) a
 
 To start migrating databases:
 - clone git repo
-- go to migration_scripts directory
-> cd connectin/migration_scripts
+- go to scripts directory
+> cd connectin/scripts
 
 - add passwords and ip addresses for mssql host and influxdbhost  
 (use `config.json` if running from influxdb host ,`config_from_remote.json` - if running remotely)
@@ -26,7 +27,7 @@ To start migrating databases:
 
 - remove state file(to clean everything and start copying data from scratch):
 >
->cd /root/migration_scripts  
+>cd /root/connectin/data
 >rm state_file_FCT_PI  
 
 - start script(for one iteration):
@@ -44,3 +45,15 @@ To view data in influxdb:
 >SELECT * FROM CONNTRACK WHERE PI_MAC='02-01-05-c0-c1-14';  
 >SELECT * FROM CONNTRACK WHERE SK_PI='2';  
 
+### Backup scripts
+
+`backup_to_csv.py`
+
+This script takes input configuration for mssql/influx from json file: config.json similar to migration script. It connects to the MSSQL database and backups all the data from FCT_PI and FCT_SPEEDTEST tables to corresponding csv files.
+
+`db_backup.sh`
+This has been added as a cron task to run every midnight to backup all the data from the MSSQL server.
+
+
+`get_all_data.py`
+Run this script to get a backup of all the data from rest of the tables into corresponsding csv files. This can be run on need basis.
