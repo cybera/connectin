@@ -1,3 +1,4 @@
 data/
 config-dev.json
 credentials.json
+migration_backup/__pycache__/
