@@ -1,14 +1,12 @@
 {
     "block_size"       : "10000",
     "driver"           : "/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.2.so.0.1",
-    "state_file_path"  : "/root/connectin/data/state_file_",
-    "data_file_path"   : "/root/connectin/data/",
-    "mssql_host"       : "",
+    "state_file_path"  : "../data/state_file_",
+    "state_file_path_csv"  : "../data/state_file_csv_",
+    "data_file_path"   : "../data/",
     "mssql_port"       : "1433",
     "mssql_username"   : "cybera_sql",
-    "mssql_password"   : "",
     "mssql_database"   : "net_speed_md ",
-    "influxdb_host"    : "localhost",
     "influxdb_port"    : "8086",
     "influxdb_database": "net_speed_md",
     "tables"           : [
@@ -76,6 +74,135 @@
                     }
             ]
         }
+    ],
+            "unix_timestamp_column": "DATA_DATE"
+        },
+        {
+            "table_name"           : "FCT_SPEEDTEST",
+            "measurments"  : [
+            {
+                "measurement_name"     : "SPEEDTEST_PING",
+                "columns"              : [
+                    {
+                        "column_name": "PING",
+                        "is_tag"     : false,
+                        "type"       : "float"
+                    },
+                    {
+                        "column_name": "PROVIDER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "IP",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "TEST_SERVER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "PROVINCE",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "SK_PI",
+                        "is_tag"     : true,
+                        "type"       : "integer"
+                    },
+                {
+                        "column_name": "PI_MAC",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    }
+
+                ]
+            },
+            {
+                "measurement_name"     : "SPEEDTEST_UPLOAD",
+                "columns"              : [
+                    {
+                        "column_name": "UPLOAD",
+                        "is_tag"     : false,
+                        "type"       : "float"
+                    },
+                    {
+                        "column_name": "PROVIDER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "IP",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "TEST_SERVER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "PROVINCE",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "SK_PI",
+                        "is_tag"     : true,
+                        "type"       : "integer"
+                    },
+                {
+                        "column_name": "PI_MAC",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    }
+
+                ]
+            },
+            {
+                "measurement_name"     : "SPEEDTEST_DOWNLOAD",
+                "columns"              : [
+                    {
+                        "column_name": "DOWNLOAD",
+                        "is_tag"     : false,
+                        "type"       : "float"
+                    },
+                    {
+                        "column_name": "PROVIDER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "IP",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "TEST_SERVER",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "PROVINCE",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    },
+                    {
+                        "column_name": "SK_PI",
+                        "is_tag"     : true,
+                        "type"       : "integer"
+                    },
+                {
+                        "column_name": "PI_MAC",
+                        "is_tag"     : true,
+                        "type"       : "string"
+                    }
+
+                ]
+            }
     ],
             "unix_timestamp_column": "DATA_DATE"
         }
