@@ -18,8 +18,8 @@ To run migration scripts from Mac
 
 
 ### Migration scripts
-`mssql_to_influx.py` 
-This script  takes data from 3 msssql tables: FCT_PI, DIM_PI and FCT_SPEEDTEST  and inserts it into influx into 4 measurements: CONNTRACK, PING, SPEEDTEST_PING, SPEEDTEST_UPLOAD, SPEEDTEST_DOWNLOAD.  
+`mssql_to_influx.py`   
+This script  takes data from 3 msssql tables: FCT_PI, DIM_PI and FCT_SPEEDTEST  and inserts it into influx into 5 measurements: CONNTRACK, PING, SPEEDTEST_PING, SPEEDTEST_UPLOAD, SPEEDTEST_DOWNLOAD.  
 Data is taken in blocks (currently 10000 rows, it can be changed in config.json:block_size). 
 It writes down the latest timestamp into state files(state_file_FCT_PI and state_file_FCT_SPEEDTEST) and on the next run starts with this timestamp.
 
