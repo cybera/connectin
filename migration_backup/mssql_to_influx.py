@@ -10,15 +10,18 @@ import utils
 with open('../config.json', 'r') as f:
     main_config = json.load(f)
 
+with open('../credentials.json', 'r') as f_credentials:
+    credentials_config = json.load(f_credentials)
+
 if __name__ == '__main__':
     
     mssql_tables = main_config['tables']
     state_file_prefix = main_config['state_file_path']
     block_size = main_config['block_size']
 
-    cnxn = utils.get_connection(driver=main_config['driver'],host=main_config['mssql_host'], 
+    cnxn = utils.get_connection(driver=main_config['driver'],host=credentials_config['mssql_host'], 
                     port=main_config['mssql_port'], username=main_config['mssql_username'],
-                    password=main_config['mssql_password'], db=main_config['mssql_database'])
+                    password=credentials_config['mssql_password'], db=main_config['mssql_database'])
 
     for table in mssql_tables:
         table_name = table['table_name']
@@ -68,7 +71,7 @@ if __name__ == '__main__':
             
             if len(data) > 0:
                 
-                influxdb_client = InfluxDBClient(main_config['influxdb_host'], main_config['influxdb_port'], '', '',
+                influxdb_client = InfluxDBClient(credentials_config['influxdb_host'], main_config['influxdb_port'], '', '',
                                                 main_config['influxdb_database'])
                 
                 for index, item in data.iterrows():
