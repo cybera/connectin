@@ -5,10 +5,11 @@ import json
 import utils
 import os
 
-with open('../config.json', 'r') as f:
+with open('/root/connectin/config.json', 'r') as f:
+
     main_config = json.load(f)
 
-with open('../credentials.json', 'r') as f_credentials:
+with open('/root/connectin/credentials.json', 'r') as f_credentials:
     credentials_config = json.load(f_credentials)
 
 if __name__ == '__main__':
