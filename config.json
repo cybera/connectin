@@ -1,9 +1,9 @@
 {
     "block_size"       : "10000",
     "driver"           : "/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.2.so.0.1",
-    "state_file_path"  : "../data/state_file_",
-    "state_file_path_csv"  : "../data/state_file_csv_",
-    "data_file_path"   : "../data/",
+    "state_file_path"  : "/root/connectin/data/state_file_",
+    "state_file_path_csv"  : "/root/connectin/data/state_file_csv_",
+    "data_file_path"   : "/root/connectin/data/",
     "mssql_port"       : "1433",
     "mssql_username"   : "cybera_sql",
     "mssql_database"   : "net_speed_md ",
@@ -20,16 +20,6 @@
                         "column_name": "CONNTRACK",
                         "is_tag"     : false,
                         "type"       : "integer"
-                    },
-                    {
-                        "column_name": "CONNTRACK_MAX",
-                        "is_tag"     : false,
-                        "type"       : "integer"
-                    },
-                    {
-                        "column_name": "CONNTRACK_PERCENT_USED",
-                        "is_tag"     : false,
-                        "type"       : "float"
                     },
                     {
                         "column_name": "SK_PI",
@@ -49,11 +39,6 @@
                 "columns"              : [
                     {
                         "column_name": "PING_DROPRATE",
-                        "is_tag"     : false,
-                        "type"       : "float"
-                    },
-                    {
-                        "column_name": "PING_STDDEV",
                         "is_tag"     : false,
                         "type"       : "float"
                     },

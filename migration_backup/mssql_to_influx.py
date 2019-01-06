@@ -42,7 +42,9 @@ if __name__ == '__main__':
         sql = "SELECT TOP " + block_size + " " + columns_list + " FROM " + table_name + ",DIM_PI WHERE " + table[
                 'unix_timestamp_column'] + " >= " + last_state_value  + " AND SK_PI=PK_PI ORDER BY DATA_DATE"
 
-      
+        if table_name=="FCT_PI":
+            sql = "SELECT TOP " + block_size + " " + columns_list + " FROM " + table_name + ",DIM_PI WHERE " + table[
+                'unix_timestamp_column'] + " >= " + last_state_value  + " AND (PING IS NOT NULL OR PING_DROPRATE=100) AND SK_PI=PK_PI ORDER BY DATA_DATE" 
         data = utils.execute_sql(cnxn, sql)
 
         for measurement in table['measurments']:
