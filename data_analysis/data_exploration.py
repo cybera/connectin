@@ -76,6 +76,22 @@ def get_stats_influxdb(client_influx,query_influx,stat_name,device_numbers):
         stats.append(stat)
     return stats
 
+def get_1_stats_influxdb(client_influx,query_influx,stat_name,device_numbers):
+    result_stats = client_influx.query(query_influx)
+    list_of_lists = []
+    for device in device_numbers:
+        points_stats=result_stats.get_points(tags={'SK_PI':str(device)})
+        point_stats=0
+        for point in points_stats:
+            point_stats=point[stat_name]
+            point_time=point["time"]
+            list_of_lists.append([point["time"],device,point_stats])
+    result=pd.DataFrame(list_of_lists, columns=["time", "SK_PI",stat_name])
+    result['time'] = pd.to_datetime(result['time'])
+    result['SK_PI']=pd.to_numeric(result['SK_PI'])
+    result=result.sort_values(by=['SK_PI', 'time'], ascending=[True, True])
+    return result
+
 def get_3_stats_influxdb(client_influx,query_influx,stat_name1,stat_name2,stat_name3,device_numbers):
     result_stats = client_influx.query(query_influx)
     list_of_lists = []
@@ -96,6 +112,23 @@ def get_3_stats_influxdb(client_influx,query_influx,stat_name1,stat_name2,stat_n
     result=result.sort_values(by=['SK_PI', 'time'], ascending=[True, True])
     return result
 
+def mean_max_median_min_by2(input_dataframe,value1, value2, value3,value4,group_by_value, rename_columns=False):
+    mean_by_device=input_dataframe[value1].groupby([input_dataframe["SK_PI"],input_dataframe[group_by_value]]).mean().reset_index()
+    if rename_columns:
+        mean_by_device.rename(columns={value1:'mean'}, inplace=True)
+    max_by_device=input_dataframe[value2].groupby([input_dataframe["SK_PI"],input_dataframe[group_by_value]]).max().reset_index()
+    if rename_columns:
+        max_by_device.rename(columns={value2:'max'}, inplace=True)
+    median_by_device=input_dataframe[value3].groupby([input_dataframe["SK_PI"],input_dataframe[group_by_value]]).median().reset_index()
+    if rename_columns:
+        median_by_device.rename(columns={value3:'median'}, inplace=True)
+    min_by_device=input_dataframe[value4].groupby([input_dataframe["SK_PI"],input_dataframe[group_by_value]]).min().reset_index()
+    if rename_columns:
+        min_by_device.rename(columns={value4:'min'}, inplace=True)
+    mean_max_by_device = pd.merge(mean_by_device, max_by_device,  how='outer', left_on=['SK_PI',group_by_value], right_on = ['SK_PI',group_by_value])
+    min_median_by_device = pd.merge(min_by_device, median_by_device,  how='outer', left_on=['SK_PI',group_by_value], right_on = ['SK_PI',group_by_value])
+    output_dataframe = pd.merge(mean_max_by_device, min_median_by_device,how='outer',left_on=['SK_PI',group_by_value], right_on = ['SK_PI',group_by_value])
+    return output_dataframe
 
 def mean_max_median_by2(input_dataframe,value1, value2, value3,group_by_value, rename_columns=False):
     mean_by_device=input_dataframe[value1].groupby([input_dataframe["SK_PI"],input_dataframe[group_by_value]]).mean().reset_index()
@@ -179,7 +212,7 @@ def combined_bar_plot_2traces(xvalues,yvalues1,yvalues2,name1,name2,title,xtitle
     iplot(fig)
 
 
-def combined_bar_plot_3traces(xvalues,yvalues1,yvalues2,yvalues3,name1,name2,name3,title,ytitle="Miliseconds", xtitle="Device Number",stack=True,line='',margin=False):
+def combined_bar_plot_3traces(xvalues,yvalues1,yvalues2,yvalues3,name1,name2,name3,title,ytitle="Miliseconds", xtitle="Device Number",stack=True,line='',margin=False,updatemenus='', annotations=''):
     trace1 = go.Bar(
             x=xvalues,
             y=yvalues1,
@@ -223,7 +256,68 @@ def combined_bar_plot_3traces(xvalues,yvalues1,yvalues2,yvalues3,name1,name2,nam
         )
     if stack:
         layout["barmode"]="stack"
-
+    if updatemenus:
+        layout['updatemenus'] = updatemenus
+    if annotations:
+        layout['annotations'] = annotations
+    fig = go.Figure(data=data, layout=layout)
+    iplot(fig)
+    
+def combined_bar_plot_4traces(xvalues,yvalues1,yvalues2,yvalues3,yvalues4,name1,name2,name3,name4,title,ytitle="Miliseconds", xtitle="Device Number",stack=True,line='',margin=False,updatemenus='', annotations=''):
+    trace1 = go.Bar(
+            x=xvalues,
+            y=yvalues1,
+            marker=dict(color=colors[2]),
+            name=name1,
+    )
+    trace2 = go.Bar(
+            x=xvalues,
+            y=yvalues2,
+            marker=dict(color=colors[3]),
+            name=name2,
+    
+    )
+    trace3 = go.Bar(
+            x=xvalues,
+            y=yvalues3,
+            marker=dict(color=colors[4]),
+            name=name3,
+    
+    )
+    trace4 = go.Bar(
+            x=xvalues,
+            y=yvalues4,
+            marker=dict(color=colors[5]),
+            name=name4,
+    
+    )
+    data = [trace1, trace2, trace3,trace4]
+    if line:
+        data.append(line)
+    if margin:
+        layout = go.Layout(
+        title=title,
+        xaxis=dict(title=xtitle),
+        yaxis=dict(title=ytitle),
+        margin = dict(
+                l= 60,
+                r= 30,
+                t= 50,
+                b= 200
+                )
+        )
+    else:
+        layout = go.Layout(
+        title=title,
+        xaxis=dict(title=xtitle),
+        yaxis=dict(title=ytitle)
+        )
+    if stack:
+        layout["barmode"]="stack"
+    if updatemenus:
+        layout['updatemenus'] = updatemenus
+    if annotations:
+        layout['annotations'] = annotations
     fig = go.Figure(data=data, layout=layout)
     iplot(fig)
 
@@ -257,7 +351,7 @@ def combined_bar_plot_multitraces(dataframe,device_numbers,sort_value,title,ytit
     iplot(fig)
 
 
-def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", uploadline=False, downloadline=False, weekdays=False):
+def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", uploadline=False, downloadline=False, weekdays=False, jitter=False):
     data=[]
     i=0
     sort_values = dataframe[sort_value].unique()
@@ -269,18 +363,25 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
 
     for val in sort_values:
         i=i+1
-        trace=go.Box(
-        y=dataframe[dataframe[sort_value]==val][plot_value], name=val, marker=dict(color=colors[i])
-    )
+        if jitter:
+            trace=go.Box(
+            y=dataframe[dataframe[sort_value]==val][plot_value], name=val, marker=dict(color=colors[i]),
+            boxpoints='all',
+            jitter=0.3,
+            pointpos=-1.8
+            )
+        else:
+            trace=go.Box(
+            y=dataframe[dataframe[sort_value]==val][plot_value], name=val, marker=dict(color=colors[i])) 
         data.append(trace)
     if uploadline:
-       data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mps'))
+        data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mps'))
     if downloadline:
-       data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mps'))
+        data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mps'))
     layout = go.Layout(
                 title=title,
                 xaxis=dict(title=sort_value),
-                yaxis=dict(title=ytitle),
+                yaxis=dict(title=ytitle, rangemode='tozero'),
             )
 
     fig = go.Figure(data=data, layout=layout)
