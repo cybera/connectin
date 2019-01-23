@@ -154,6 +154,18 @@ def mean_max_median_by1(df,column,index_col='SK_PI'):
     med_max_avg_df=pd.merge(pd.merge(max_df, med_df,on=index_col),avg_df, on=index_col)
     return med_max_avg_df
 
+def mean_max_median_min_by1(df,column,index_col='SK_PI'):
+    max_df = df.groupby(index_col)[column].max().reset_index()
+    max_df.columns = [index_col, 'max']
+    med_df = df.groupby(index_col)[column].median().reset_index()
+    med_df.columns = [index_col, 'median']
+    avg_df = df.groupby(index_col)[column].mean().reset_index()
+    avg_df.columns = [index_col, 'mean']
+    min_df = df.groupby(index_col)[column].min().reset_index()
+    min_df.columns = [index_col, 'min']
+    med_max_avg_df=pd.merge(pd.merge(pd.merge(max_df, med_df,on=index_col),avg_df, on=index_col),min_df,on=index_col)
+    return med_max_avg_df
+
 def simple_pie_chart(labels,values,title):
     data = [go.Pie(
             labels=labels,
