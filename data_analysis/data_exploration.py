@@ -363,7 +363,7 @@ def combined_bar_plot_multitraces(dataframe,device_numbers,sort_value,title,ytit
     iplot(fig)
 
 
-def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", uploadline=False, downloadline=False, weekdays=False, jitter=False):
+def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", xtitle="", uploadline=False, downloadline=False, weekdays=False, jitter=False):
     data=[]
     i=0
     sort_values = dataframe[sort_value].unique()
@@ -377,14 +377,14 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
         i=i+1
         if jitter:
             trace=go.Box(
-            y=dataframe[dataframe[sort_value]==val][plot_value], name=val, marker=dict(color=colors[i]),
+            y=dataframe[dataframe[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[i]),
             boxpoints='all',
             jitter=0.3,
             pointpos=-1.8
             )
         else:
             trace=go.Box(
-            y=dataframe[dataframe[sort_value]==val][plot_value], name=val, marker=dict(color=colors[i])) 
+            y=dataframe[dataframe[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[i])) 
         data.append(trace)
     if uploadline:
         data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mps'))
@@ -392,7 +392,7 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
         data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mps'))
     layout = go.Layout(
                 title=title,
-                xaxis=dict(title=sort_value),
+                xaxis=dict(title=xtitle),
                 yaxis=dict(title=ytitle, rangemode='tozero'),
             )
 
