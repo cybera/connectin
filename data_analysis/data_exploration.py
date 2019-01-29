@@ -53,6 +53,7 @@ def get_dataframe_from_influxdb(client_df, query_influx, table_name):
         result=result.sort_values(by=['SK_PI', 'time'], ascending=[True, True])
     else:
         result=result.sort_values(by=['time'], ascending=[True])
+    result['time']= result['time'].dt.tz_localize('UTC').dt.tz_convert('America/Winnipeg')
     return result
 
 def get_tag_values_influxdb(client_influx,table_name, tag_name):
@@ -90,6 +91,7 @@ def get_1_stats_influxdb(client_influx,query_influx,stat_name,device_numbers):
     result['time'] = pd.to_datetime(result['time'])
     result['SK_PI']=pd.to_numeric(result['SK_PI'])
     result=result.sort_values(by=['SK_PI', 'time'], ascending=[True, True])
+    result['time']= result['time'].dt.tz_localize('UTC').dt.tz_convert('America/Winnipeg')
     return result
 
 def get_3_stats_influxdb(client_influx,query_influx,stat_name1,stat_name2,stat_name3,device_numbers):
@@ -110,6 +112,7 @@ def get_3_stats_influxdb(client_influx,query_influx,stat_name1,stat_name2,stat_n
     result['time'] = pd.to_datetime(result['time'])
     result['SK_PI']=pd.to_numeric(result['SK_PI'])
     result=result.sort_values(by=['SK_PI', 'time'], ascending=[True, True])
+    result['time']= result['time'].dt.tz_localize('UTC').dt.tz_convert('America/Winnipeg')
     return result
 
 def mean_max_median_min_by2(input_dataframe,value1, value2, value3,value4,group_by_value, rename_columns=False):
