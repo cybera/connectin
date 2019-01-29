@@ -1,4 +1,20 @@
 ## ConnectIn project
+### Set up
+To connect to MS SQL database we are goint to use odbc driver.
+ODBC is a specification for a database API.(https://docs.microsoft.com/en-us/sql/odbc/reference/what-is-odbc?view=sql-server-2017)
+
+To install it on Ubuntu run:
+* `sudo apt-get install unixodbc unixodbc-dev libodbc1 msodbcsql17 odbcinst odbcinst1debian2`
+* Make sure driver file is created : `/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.2.so.0.1` 
+
+To install it on MAC run(from here: https://community.exploratory.io/t/connecting-to-ms-sql-server-through-odbc-from-mac/339):
+* Update homebrew to the latest first: `brew update`
+* install libiodbc with homebrew:` brew install libiodbc`
+* Install freetds with homebrew`brew: install freetds --with-odbc-wide`
+* Make sure that freetds ODBC driver library file is successfully created:  `/usr/local/lib/libtdsodbc.so`
+
+Install pyoddbc python package : `pip install pyodbc`
+
 ### Json files
   
 Configuration for MS SQL/InfluxDB migration is stored in config.json
