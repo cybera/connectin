@@ -366,7 +366,7 @@ def combined_bar_plot_multitraces(dataframe,device_numbers,sort_value,title,ytit
     iplot(fig)
 
 
-def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", xtitle="", uploadline=False, downloadline=False, weekdays=False, jitter=False):
+def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number", xtitle="", uploadline=False, downloadline=False, weekdays=False, jitter=False, boughtline=''):
     data=[]
     i=0
     sort_values = dataframe[sort_value].unique()
@@ -393,6 +393,8 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
         data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mps'))
     if downloadline:
         data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mps'))
+    if boughtline:
+        data.append(boughtline)
     layout = go.Layout(
                 title=title,
                 xaxis=dict(title=xtitle),
