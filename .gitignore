@@ -1,5 +1,7 @@
 data/
 config-dev.json
 credentials.json
-migration_backup/__pycache__/
+__pycache__/
 .ipynb_checkpoints
+.DS_Store
+data_analysis/drafts.ipynb
