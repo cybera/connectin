@@ -27,10 +27,12 @@ def connect_to_influxdb():
     with open('../credentials.json', 'r') as f_credentials:
         credentials_config = json.load(f_credentials)
     host=credentials_config['influxdb_host']
+    password=credentials_config['influxdb_password']
+    user='admin'
     port=8086
     dbname = 'net_speed_md'
-    client_influx = InfluxDBClient(host, port, '', '', dbname)
-    client_df = DataFrameClient(host, port, '', '', dbname)
+    client_influx = InfluxDBClient(host, port, user, password, dbname)
+    client_df = DataFrameClient(host, port, user, password, dbname)
     return client_influx, client_df
 
 def connect_to_mssql():
