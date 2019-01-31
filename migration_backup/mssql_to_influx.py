@@ -73,7 +73,7 @@ if __name__ == '__main__':
             
             if len(data) > 0:
                 
-                influxdb_client = InfluxDBClient(credentials_config['influxdb_host'], main_config['influxdb_port'], '', '',
+                influxdb_client = InfluxDBClient(credentials_config['influxdb_host'], main_config['influxdb_port'], 'admin',credentials_config["influxdb_password"], 
                                                 main_config['influxdb_database'])
                 
                 for index, item in data.iterrows():
