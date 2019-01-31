@@ -24,7 +24,7 @@ Another configuration file needs to be created to store passwords and host IP ad
 >{   
 >    "mssql_host"       : "Ip address of MS SQL host(1Password)",   
 >    "mssql_password"   : "Password for MS SQL database(1Password)",   
->    "influxdb_host"    : "localhost if running locally on connectin VM or IP address or the connectin VM",
+>    "influxdb_host"    : "localhost if running locally on connectin VM or IP address or the connectin VM",     
 >    "influxdb_password": "Password for influxdb database(1Password)"
 >}  
   
