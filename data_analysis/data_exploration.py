@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 import plotly.plotly as py
 from plotly import tools
 
-import pyodbc
+#import pyodbc
 import pandas as pd
 
 from datetime import datetime
@@ -35,13 +35,13 @@ def connect_to_influxdb():
     client_df = DataFrameClient(host, port, user, password, dbname)
     return client_influx, client_df
 
-def connect_to_mssql():
-    with open('../credentials.json', 'r') as f_credentials:
-        credentials_config = json.load(f_credentials)
-    password=credentials_config['mssql_password']
-    srv=credentials_config['mssql_host']
-    connection = pyodbc.connect(driver='/usr/local/lib/libtdsodbc.so', server=srv,port='1433', database='net_speed_md', uid='cybera_sql', pwd=password)
-    return connection
+#def connect_to_mssql():
+#    with open('../credentials.json', 'r') as f_credentials:
+#        credentials_config = json.load(f_credentials)
+#    password=credentials_config['mssql_password']
+#    srv=credentials_config['mssql_host']
+#    connection = pyodbc.connect(driver='/usr/local/lib/libtdsodbc.so', server=srv,port='1433', database='net_speed_md', uid='cybera_sql', pwd=password)
+#    return connection
 
 def get_dataframe_from_influxdb(client_df, query_influx, table_name):
     result_query = client_df.query(query_influx)
@@ -392,9 +392,9 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
             y=dataframe[dataframe[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[i])) 
         data.append(trace)
     if uploadline:
-        data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mps'))
+        data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mbps'))
     if downloadline:
-        data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mps'))
+        data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mbps'))
     if boughtline:
         data.append(boughtline)
     layout = go.Layout(
