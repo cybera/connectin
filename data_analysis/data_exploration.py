@@ -405,4 +405,91 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
 
     fig = go.Figure(data=data, layout=layout)
     iplot(fig)
+    
+    
+def boxplot_2groups(dataframe1,dataframe2,plot_value,sort_value,title, ytitle="Device Number", xtitle="", uploadline=False, downloadline=False, weekdays=False, jitter=False, boughtline=''):
+    data=[]
+    i=0
+    sort_values1 = dataframe1[sort_value].unique()
+    sort_values2 = dataframe2[sort_value].unique()
+    set1 = set(sort_values1)
+    set2 = set(sort_values2)
+    sort_values=list(set(sort_values1) | set(sort_values2))
+    if weekdays:
+        m = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        sort_values1= sorted(sort_values1,key=m.index)
+        sort_values2= sorted(sort_values2,key=m.index)
+    else:
+        sort_values1= sorted(sort_values1)
+        sort_values2= sorted(sort_values2)
+
+    for val in sort_values1:
+        i=i+1
+        if jitter:
+            trace=go.Box(
+            y=dataframe1[dataframe1[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[4], opacity=0.4),
+            boxpoints='all',
+            jitter=0.3,
+            pointpos=-1.8
+            )
+        else:
+            trace=go.Box(
+            y=dataframe1[dataframe1[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[4], opacity=0.4)) 
+        data.append(trace)
+    
+    for val in sort_values2:
+        i=i+1
+        if jitter:
+            trace=go.Box(
+            y=dataframe2[dataframe2[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[3], opacity=0.4),
+            boxpoints='all',
+            jitter=0.3,
+            pointpos=-1.8
+            )
+        else:
+            trace=go.Box(
+            y=dataframe2[dataframe2[sort_value]==val][plot_value], name=str(val), marker=dict(color=colors[3], opacity=0.4)) 
+        data.append(trace)
+    
+    if uploadline:
+        data.append(go.Scatter(x=sort_values,y=[10] * len(sort_values), mode='markers',marker=dict(color='red'), name='10Mbps'))
+    if downloadline:
+        data.append(go.Scatter(x=sort_values,y=[50] * len(sort_values), mode='markers',marker=dict(color='red'), name='50Mbps'))
+    if boughtline:
+        data.append(boughtline)
+    layout = go.Layout(
+                title=title,
+                xaxis=dict(title=xtitle),
+                yaxis=dict(title=ytitle, rangemode='tozero'),
+            )
+
+    fig = go.Figure(data=data, layout=layout)
+    iplot(fig)
+    
+    
+def scatterplot_2groups(title,dataframe1,dataframe2,plot_value,ytitle,xtitle="Device Number", name1="speedtest", name2="iperf", index_value="SK_PI"):
+    trace1 = go.Scatter(
+            x = dataframe1[index_value],
+            y = dataframe1[plot_value],
+            mode = 'markers',
+            marker = dict(color=colors[4], opacity=0.4),
+            name = name1
+        )
+
+    trace2 = go.Scatter(
+            x = dataframe2[index_value],
+            y = dataframe2[plot_value],
+            mode = 'markers',
+            marker = dict(color=colors[3], opacity=0.4),
+            name = name2
+        )
+
+    layout = go.Layout(
+            title=title,
+            xaxis=dict(title=xtitle),
+            yaxis=dict(title=ytitle)
+            )
+    data = [trace1, trace2]
+    fig = go.Figure(data=data, layout=layout)
+    iplot(fig)
 
