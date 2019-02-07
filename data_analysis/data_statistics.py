@@ -36,7 +36,7 @@ def dist_subplots(dataframe,title,device_numbers,plot_value,num_cols=4):
         #trace=go.Histogram(x=subset[plot_value],marker=dict(color=colors[device]))
         group_labels = ['device '+str(device)]
         hist_data = [subset[plot_value]]
-        fig2=ff.create_distplot(hist_data,group_labels, bin_size=0.5, curve_type='normal')
+        fig2=ff.create_distplot(hist_data,group_labels, bin_size=0.5, curve_type='normal',colors=[colors[device]])
         for trace in fig2['data']:
             fig.append_trace(trace, i, j)
 #       fig.append_trace(trace, i, j)
