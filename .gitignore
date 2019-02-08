@@ -6,3 +6,4 @@ __pycache__/
 .DS_Store
 data_analysis/drafts.ipynb
 data_analysis/coordinates.csv
+data_analysis/coordinates2.csv
