@@ -1,5 +1,6 @@
 ## ConnectIn project
 ### Set up
+#### MS SQL
 To connect to MS SQL database we are goint to use odbc driver.
 ODBC is a specification for a database API.(https://docs.microsoft.com/en-us/sql/odbc/reference/what-is-odbc?view=sql-server-2017)
 
@@ -14,6 +15,10 @@ To install it on MAC run(from here: https://community.exploratory.io/t/connectin
 * Make sure that freetds ODBC driver library file is successfully created:  `/usr/local/lib/libtdsodbc.so`
 
 Install pyoddbc python package : `pip install pyodbc`
+
+#### InfluxDB
+Install python package: `pip install influxdb==5.2.1`  
+The highest version of python that is supported by `influxdb` package is **3.6**
 
 ### Json files
   
@@ -102,3 +107,23 @@ To view data in influxdb:
 >SHOW TAG KEYS FROM CONNTRACK;   
 >SELECT * FROM CONNTRACK WHERE PI_MAC='02-01-05-c0-c1-14';  
 >SELECT * FROM CONNTRACK WHERE SK_PI='2';  
+
+### Data Analysis
+In the **data_analysis** directory there ara Jupyter notebooks and dashboard.
+
+Notebooks are organized by sprint numbers: 1-3. Every  sprint has notebooks plus summary notebook (report presented at steering committee meeting)
+
+Dashboard - **connectin_dashboard.py** - first version of connectin dashboard written in plotly Dash (https://plot.ly/products/dash/)
+It order to run it requiries dash python modules installed:
+
+>pip install dash==0.37.0  
+>pip install dash-html-components==0.13.5  
+>pip install dash-core-components==0.43.1  
+>pip install dash-table==3.4.0  
+>pip install dash-daq==0.1.0   
+>pip install dash.ly==0.17.3  
+>pip install pytz  
+>pip install statistics  
+    
+
+and two helper files: **coordinates.csv** and **coordinates2.csv** (stored in Swift container in RAC)
