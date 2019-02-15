@@ -109,12 +109,12 @@ To view data in influxdb:
 >SELECT * FROM CONNTRACK WHERE SK_PI='2';  
 
 ### Data Analysis
-In the **data_analysis** directory there ara Jupyter notebooks and dashboard.
+In the **data_analysis** directory there are Jupyter notebooks and dashboard.
 
 Notebooks are organized by sprint numbers: 1-3. Every  sprint has notebooks plus summary notebook (report presented at steering committee meeting)
 
 Dashboard - **connectin_dashboard.py** - first version of connectin dashboard written in plotly Dash (https://plot.ly/products/dash/)
-It order to run it requiries dash python modules installed:
+It order to run it requires dash python modules installed:
 
 >pip install dash==0.37.0  
 >pip install dash-html-components==0.13.5  
