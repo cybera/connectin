@@ -3,18 +3,16 @@ import csv
 import utils
 import json
 import pandas as pd
+import os
 
 with open('/root/connectin/config.json', 'r') as f:
     main_config = json.load(f)
 
-with open('/root/connectin/credentials.json', 'r') as f_credentials:
-    credentials_config = json.load(f_credentials)
-
 if __name__ == '__main__':
-	
-	cnxn = utils.get_connection(driver=main_config['driver'],host=credentials_config['mssql_host'], 
-                    port=main_config['mssql_port'], username=main_config['mssql_username'],
-                    password=credentials_config['mssql_password'], db=main_config['mssql_database'])
+
+	cnxn = utils.get_connection(driver=main_config['driver'], host=os.environ['MSSQL_HOST'],
+								port=os.environ['MSSQL_PORT'], username=os.environ['MSSQL_USER'],
+								password=os.environ['MSSQL_PASSWORD'], db=os.environ['MSSQL_DATABASE'])
 
 
 	tables = ["DIM_PI", "DIM_FILE_COL_MAP", "DIM_FILE_LOAD_LOG", "DIM_FILE_PATTERN", "DIM_FILE_PROCESS_TYPE", "LOG_EVENT", "LOG_EXECUTION", 

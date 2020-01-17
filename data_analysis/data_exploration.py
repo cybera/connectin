@@ -4,10 +4,11 @@ import json
 
 from plotly.offline import init_notebook_mode, iplot
 import plotly.graph_objs as go
-import plotly.plotly as py
+import chart_studio.plotly  as py
 from plotly import tools
 
 #import pyodbc
+import os
 import pandas as pd
 
 from datetime import datetime
@@ -20,17 +21,15 @@ colors=['#F2F3F4', '#222222', '#F3C300', '#875692', '#F38400', '#A1CAF1', '#BE00
         '#848482', '#008856', '#E68FAC', '#0067A5', '#F99379', '#604E97', '#F6A600', '#B3446C',
         '#DCD300', '#882D17', '#8DB600', '#654522', '#E25822', '#2B3D26']
 
-init_notebook_mode(connected=True)
+#init_notebook_mode(connected=True)
 
 
 def connect_to_influxdb():
-    with open('../credentials.json', 'r') as f_credentials:
-        credentials_config = json.load(f_credentials)
-    host=credentials_config['influxdb_host']
-    password=credentials_config['influxdb_password']
-    user='admin'
-    port=8086
-    dbname = 'net_speed_md'
+    host=os.environ['INFLUXDB_HOST']
+    password=os.environ["INFLUXDB_READ_USER_PASSWORD"]
+    user=os.environ["INFLUXDB_READ_USER"]
+    port=os.environ["INFLUXDB_PORT"]
+    dbname = os.environ["INFLUXDB_DB"]
     client_influx = InfluxDBClient(host, port, user, password, dbname)
     client_df = DataFrameClient(host, port, user, password, dbname)
     return client_influx, client_df

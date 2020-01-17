@@ -3,15 +3,14 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
+from data_statistics import *
+
 from datetime import  timedelta
 from pytz import timezone
 import copy
 import re
 
-import sys
-sys.path.append('/home/connectin/data_analysis')
 
-from data_statistics import *
 
 app = dash.Dash(__name__)
 
@@ -101,11 +100,11 @@ app.layout = html.Div(children=[
       dcc.RadioItems(
           id="radio_table",
             options=[
-                {'label': 'Download speed', 'value': 'SPEEDTEST_IPERF_DOWNLOAD'},
-                {'label': 'Upload speed', 'value': 'SPEEDTEST_IPERF_UPLOAD'},
-                {'label': 'Ping latency', 'value': 'SPEEDTEST_IPERF_PING'},
+                {'label': 'Download speed', 'value': 'SPEEDTEST_DOWNLOAD'},
+                {'label': 'Upload speed', 'value': 'SPEEDTEST_UPLOAD'},
+                {'label': 'Ping latency', 'value': 'SPEEDTEST_PING'},
             ],
-            value='SPEEDTEST_IPERF_DOWNLOAD',
+            value='SPEEDTEST_DOWNLOAD',
             labelStyle={'display': 'inline-block'},
             style={'textAlign': 'center', 'fontSize': '20'}
      )
@@ -193,12 +192,12 @@ def update_slider_example_marks(input):
         query_tail=" AND PROVIDER!='iperf'"
     elif input=="iperf":
         query_tail=" AND PROVIDER='iperf'"
-    query_upload_last = "SELECT LAST(UPLOAD), time FROM SPEEDTEST_IPERF_UPLOAD WHERE UPLOAD>0"+query_tail+";"
-    result_stats=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_upload_last,table_name='SPEEDTEST_IPERF_UPLOAD')
+    query_upload_last = "SELECT LAST(UPLOAD), time FROM SPEEDTEST_UPLOAD WHERE UPLOAD>0"+query_tail+";"
+    result_stats=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_upload_last,table_name='SPEEDTEST_UPLOAD')
     res1=result_stats["time"].iloc[0]
 
-    query_upload_first = "SELECT FIRST(UPLOAD), time FROM SPEEDTEST_IPERF_UPLOAD WHERE UPLOAD>0"+query_tail+";"
-    result_stats=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_upload_first,table_name='SPEEDTEST_IPERF_UPLOAD')
+    query_upload_first = "SELECT FIRST(UPLOAD), time FROM SPEEDTEST_UPLOAD WHERE UPLOAD>0"+query_tail+";"
+    result_stats=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_upload_first,table_name='SPEEDTEST_UPLOAD')
     res2=result_stats["time"].iloc[0]
 
     monday1 = (res1 - timedelta(days=res1.weekday()))
@@ -256,8 +255,8 @@ def update_dropdown_devices(method, dates, marks):
     dt2=dt1.astimezone(timezone('UTC'))
     date2=datetime.strftime(dt2,'%Y-%m-%d %H:%M:%S')
 
-    query_devices = "SELECT * FROM SPEEDTEST_IPERF_UPLOAD WHERE UPLOAD>0 AND time >= '"+date1+"' AND time < '"+date2+"'"+query_tail+";"
-    result_dev=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_devices,table_name='SPEEDTEST_IPERF_UPLOAD')
+    query_devices = "SELECT * FROM SPEEDTEST_UPLOAD WHERE UPLOAD>0 AND time >= '"+date1+"' AND time < '"+date2+"'"+query_tail+";"
+    result_dev=get_dataframe_from_influxdb(client_df=client_df,query_influx=query_devices,table_name='SPEEDTEST_UPLOAD')
     device_numbers=[]
     if  not result_dev.empty:
         device_numbers=result_dev['SK_PI'].unique()
@@ -295,7 +294,7 @@ def disable_dropdown_one(value):
              Input('method_dropdown', 'value'),
              Input('range_slider', 'value')])
 def set_radio_value(summary,devices_d,method, dates):
-    return "SPEEDTEST_IPERF_DOWNLOAD"
+    return "SPEEDTEST_DOWNLOAD"
 
 
 @app.callback(Output('radio_graph1', 'value'), 
@@ -324,7 +323,7 @@ def set_radio_graph3_value(value):
 
 def create_summary_graph(table,summary,devices_d,method, dates, marks,graph_type):
     data=[]
-    pv=re.sub('SPEEDTEST_IPERF_', '', table)
+    pv=re.sub('SPEEDTEST_', '', table)
     ytitle=""
     result=query_database(table,method,dates,marks)
 
@@ -340,9 +339,9 @@ def create_summary_graph(table,summary,devices_d,method, dates, marks,graph_type
         d_line=False
         u_line=False
         ytitle="Mbps"
-        if table=="SPEEDTEST_IPERF_DOWNLOAD":
+        if table=="SPEEDTEST_DOWNLOAD":
             d_line=True
-        elif table=="SPEEDTEST_IPERF_UPLOAD":
+        elif table=="SPEEDTEST_UPLOAD":
             u_line=True
         else:
             ytitle="Miliseconds"    
@@ -391,7 +390,7 @@ def create_summary_graph(table,summary,devices_d,method, dates, marks,graph_type
 def create_byhour_graph(table,summary,devices_d,method, dates, marks,graph_type):
     data=[]
     ytitle="" 
-    pv=re.sub('SPEEDTEST_IPERF_', '', table)
+    pv=re.sub('SPEEDTEST_', '', table)
     result=query_database(table,method,dates,marks)
 
     if  not result.empty:
@@ -406,9 +405,9 @@ def create_byhour_graph(table,summary,devices_d,method, dates, marks,graph_type)
         d_line=False
         u_line=False
         ytitle="Mbps"
-        if table=="SPEEDTEST_IPERF_DOWNLOAD":
+        if table=="SPEEDTEST_DOWNLOAD":
             d_line=True
-        elif table=="SPEEDTEST_IPERF_UPLOAD":
+        elif table=="SPEEDTEST_UPLOAD":
             u_line=True
         else:
             ytitle="Miliseconds"     
@@ -462,7 +461,7 @@ def create_byhour_graph(table,summary,devices_d,method, dates, marks,graph_type)
 def create_byweek_graph(table,summary,devices_d,method, dates, marks,graph_type):
     data=[]
     ytitle=""
-    pv=re.sub('SPEEDTEST_IPERF_', '', table)
+    pv=re.sub('SPEEDTEST_', '', table)
     result=query_database(table,method,dates,marks)
     
     if  not result.empty:
@@ -477,9 +476,9 @@ def create_byweek_graph(table,summary,devices_d,method, dates, marks,graph_type)
         d_line=False
         u_line=False
         ytitle="Mbps"
-        if table=="SPEEDTEST_IPERF_DOWNLOAD":
+        if table=="SPEEDTEST_DOWNLOAD":
             d_line=True
-        elif table=="SPEEDTEST_IPERF_UPLOAD":
+        elif table=="SPEEDTEST_UPLOAD":
             u_line=True
         else:
             ytitle="Miliseconds"     
@@ -531,7 +530,7 @@ def create_byweek_graph(table,summary,devices_d,method, dates, marks,graph_type)
              Input('radio_graph1', 'value')])
 
 def create_map_graph(table,summary,devices_d,method, dates, marks,graph_type):
-    pv=re.sub('SPEEDTEST_IPERF_', '', table)
+    pv=re.sub('SPEEDTEST_', '', table)
     #layout= dict(
     #    title = 'Devices colored by average'+pv,
     #    colorbar = True,
@@ -643,7 +642,7 @@ def create_map_graph(table,summary,devices_d,method, dates, marks,graph_type):
 
 def create_graph_table(table,summary,devices_d,method, dates, marks,graph_type):
     summary_result=pd.DataFrame()
-    pv=re.sub('SPEEDTEST_IPERF_', '', table)
+    pv=re.sub('SPEEDTEST_', '', table)
     result=query_database(table,method,dates,marks)
     devices=False
     if summary!="Summary":
@@ -668,8 +667,8 @@ def create_graph_table(table,summary,devices_d,method, dates, marks,graph_type):
         summary_result=pd.merge(count_result,mean_result,  how='outer', left_on=['SK_PI'], right_on = ['SK_PI'])
         summary_result=pd.merge(summary_result, std_result,  how='outer', left_on=['SK_PI'], right_on = ['SK_PI'])
 
-        if not table=="SPEEDTEST_IPERF_PING":
-            if table=="SPEEDTEST_IPERF_UPLOAD":
+        if not table=="SPEEDTEST_PING":
+            if table=="SPEEDTEST_UPLOAD":
                 treshold=10
             else :
                 treshold=50
@@ -781,15 +780,15 @@ def query_database(table,method,dates,marks):
 
     query = "SELECT * FROM "+table_name+" WHERE  time >= '"+date1+"' AND time < '"+date2+"'"+query_tail+";"
     result=get_dataframe_from_influxdb(client_df=client_df,query_influx=query,table_name=table_name)
-    if table=="SPEEDTEST_IPERF_DOWNLOAD":
+    if table=="SPEEDTEST_DOWNLOAD":
         if method=="iperf":
             if  not result.empty:
                     result["DOWNLOAD"]=result["DOWNLOAD"]*0.001       
-    elif table=="SPEEDTEST_IPERF_UPLOAD":
+    elif table=="SPEEDTEST_UPLOAD":
         if method=="iperf":
             if  not result.empty:
                 result["UPLOAD"]=result["UPLOAD"]*0.001
-    elif table=="SPEEDTEST_IPERF_PING":
+    elif table=="SPEEDTEST_PING":
         if  not result.empty:
             result = result[result["PING"] != 1800000.000]    
     return result
@@ -932,4 +931,4 @@ app.css.append_css({
 })
 
 if __name__ == '__main__':
-    app.run_server(host="0.0.0.0", debug=True)
+    app.run_server(debug=True)
