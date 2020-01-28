@@ -3,5 +3,5 @@ creds.env
 __pycache__/
 .ipynb_checkpoints
 .DS_Store
-data_analysis/coordinates.csv
+data_analysis/coordinates1.csv
 data_analysis/coordinates2.csv
