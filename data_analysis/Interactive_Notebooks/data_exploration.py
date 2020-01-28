@@ -35,8 +35,14 @@ colors = colors_plotly[0]
 limits = {"DOWNLOAD":50,"UPLOAD":10}
 colors_iperf_speedtest = {"iperf":colors[3],"speedtest":colors[2]}
 
-timezone_common = 'America/Winnipeg'
-timezones_by_device =  {3:'MST',37:'MST'}
+with open('/home/connectin/config.json', 'r') as f:
+    main_config = json.load(f)
+
+timezone_common = main_config['timezone']
+timezones_by_device =  {}
+if path.exists("../timezone_by_device.csv"):
+    df1 = pd.read_csv("../timezone_by_device.csv")
+    timezones_by_device = df1.set_index("device_number").to_dict()["Timezone"]
 
 test_size = 100
 sample_size_r=45
@@ -46,8 +52,6 @@ alpha = 0.05
 init_notebook_mode(connected=True)
 
 
-with open('/home/connectin/config.json', 'r') as f:
-    main_config = json.load(f)
 
 def connect_to_mssql():
     connection = pyodbc.connect(driver=main_config['driver'], server=os.environ['MSSQL_HOST'],
