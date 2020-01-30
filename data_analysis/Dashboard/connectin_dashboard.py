@@ -17,7 +17,7 @@ app = dash.Dash(__name__)
 
 client, client_df = connect_to_influxdb()
 
-coordinates_df = pd.read_csv("/home/connectin/data_analysis/Original_notebooks/coordinates2.csv")
+coordinates_df = pd.read_csv("/home/connectin/data_analysis/coordinates2.csv")
 coordinates_df.set_index('device_number', inplace=True)
 
 min_sample_size=100
@@ -582,7 +582,7 @@ def create_map_graph(table,summary,devices_d,method, dates, marks,graph_type):
             trace1 =  dict(
                 #type = 'scattergeo',
                 type='scattermapbox',
-                lon = loc_result['long'],
+                lon = loc_result['lon'],
                 lat = loc_result['lat'],
                 text = loc_result['text'],
                 name="",
@@ -614,7 +614,7 @@ def create_map_graph(table,summary,devices_d,method, dates, marks,graph_type):
                     trace2=dict(
                     #type = 'scattergeo',
                     type='scattermapbox',
-                    lon = loc_result['long'],
+                    lon = loc_result['lon'],
                     lat = loc_result['lat'],
                     text = loc_result['text'],
                     name="",
