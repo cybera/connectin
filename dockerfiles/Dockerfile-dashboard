@@ -8,7 +8,7 @@ RUN mkdir /dashboard
 
 WORKDIR /dashboard
 
-COPY data_analysis/connectin_dashboard.py ./
+ADD data_analysis/Dashboard ./
 
-CMD ["python3", "./connectin_dashboard.py"]
+CMD ["python3", "./test_dashboard.py"]
 

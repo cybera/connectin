@@ -29,7 +29,7 @@ from IPython.display import clear_output,display, Javascript
 import warnings
 warnings.filterwarnings('ignore')
 
-colors_plotly = pd.read_csv("colors_plotly.csv", header=None)
+colors_plotly = pd.read_csv("/home/connectin/data_analysis/Interactive_notebooks/colors_plotly.csv", header=None)
 colors = colors_plotly[0]
 
 limits = {"DOWNLOAD":50,"UPLOAD":10}
@@ -40,8 +40,8 @@ with open('/home/connectin/config.json', 'r') as f:
 
 timezone_common = main_config['timezone']
 timezones_by_device =  {}
-if path.exists("../timezone_by_device.csv"):
-    df1 = pd.read_csv("../timezone_by_device.csv")
+if path.exists("/home/connectin/data_analysis/timezone_by_device.csv"):
+    df1 = pd.read_csv("/home/connectin/data_analysis/timezone_by_device.csv")
     timezones_by_device = df1.set_index("device_number").to_dict()["Timezone"]
 
 test_size = 100
@@ -123,6 +123,51 @@ def get_all_data(client_df):
     #converting iperf test results into format comparable to speedtest
     df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
     df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
+    return df   
+
+def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
+    
+    mes_dict = {"PING":"SPEEDTEST_IPERF_PING","UPLOAD":"SPEEDTEST_IPERF_UPLOAD",
+               "DOWNLOAD":"SPEEDTEST_IPERF_DOWNLOAD"}
+    if from_date==0:
+        starting_point=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        starting_point=from_date.strftime('%Y-%m-%d %H:%M:%S')
+    
+    if to_date==0:
+        end_point="1677-09-22"
+    elif to_date in [1,3,6,12]:
+        end_point = (datetime.now() - pd.DateOffset(months=to_date)).strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        end_point=to_date.strftime('%Y-%m-%d %H:%M:%S')
+    
+    
+    query = "SELECT * FROM "+mes_dict[mes_type]+" WHERE time <= '"+starting_point+"' AND time >= '"+end_point+"' ORDER BY time;"
+    #print( query)
+    df = get_dataframe_from_influxdb(client_df=client_df,query_influx=query,table_name=mes_dict[mes_type])
+
+    df["MES_TYPE"]=mes_type
+    df.rename(columns={mes_type:"result"}, inplace=True)
+
+    #device number should be numeric for proper sorting
+    df['SK_PI']=pd.to_numeric(df['SK_PI'])
+
+    #common timezone
+    df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
+    
+    #timezone by device
+    for key in timezones_by_device.keys():
+        df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+    
+    #removing timezone information  
+    df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
+
+    #we will sort by time to have earliest time first
+    df = df.sort_values("time")
+
+    #converting iperf test results into format comparable to speedtest
+    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
+    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
     return df    
 
 def get_fig_raw_data_by_device(subset,subset1):
@@ -175,16 +220,24 @@ def get_fig_raw_data_6_months(subset,device_numbers):
     )
 
     fig.update_layout(
-        xaxis=go.layout.XAxis(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1,
-                         label="1m",
-                         step="month",
-                         stepmode="backward"),
-                    dict(step="all")
-                ])
-            ),
+            xaxis=go.layout.XAxis(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
             rangeslider=dict(
                 visible=True
             ),
