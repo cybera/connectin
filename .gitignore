@@ -7,3 +7,4 @@ __pycache__/
 data_analysis/coordinates1.csv
 data_analysis/coordinates2.csv
 data_analysis/timezone_by_device.csv
+data_analysis/Interactive_notebooks/dashboard_test.ipynb

@@ -32,6 +32,8 @@ warnings.filterwarnings('ignore')
 colors_plotly = pd.read_csv("/home/connectin/data_analysis/Interactive_notebooks/colors_plotly.csv", header=None)
 colors = colors_plotly[0]
 
+coordinates_path = "/home/connectin/data_analysis/coordinates2.csv"
+
 limits = {"DOWNLOAD":50,"UPLOAD":10}
 colors_iperf_speedtest = {"iperf":colors[3],"speedtest":colors[2]}
 
@@ -208,16 +210,13 @@ def get_fig_raw_data_by_device(subset,subset1):
         )
         return fig
     
-def get_fig_raw_data_6_months(subset,device_numbers):
+def get_fig_raw_data_6_months(subset,device_numbers, title = "Raw data: iperf and speedtest for all devices over the last 6 months"):
     fig = go.Figure()
     for device in device_numbers:
         subset1= subset[subset["SK_PI"]==device]
         fig.add_trace(
             go.Scatter(x=subset1["time"], y=subset1["result"],mode='markers',opacity = 0.7,marker=dict(color=colors[device]),name = str(device)))
 
-    fig.update_layout(
-        title_text="Raw data: iperf and speedtest for all devices over the last 6 months"
-    )
 
     fig.update_layout(
             xaxis=go.layout.XAxis(
@@ -244,7 +243,11 @@ def get_fig_raw_data_6_months(subset,device_numbers):
             type="date"
         )
     )
-    fig.update_layout(showlegend=True)
+    fig.update_layout(showlegend=True,title_text=title)
+    fig.update_layout(yaxis=dict(title="Mbps"))
+    if subset["MES_TYPE"].unique()==["PING"]:
+        fig.update_layout(yaxis=dict(title="Miliseconds"))
+    
     return fig
 
 def get_fig_speedtest(subset,color_by):
@@ -330,7 +333,7 @@ def get_fig_agg_by_device(subset,subset1,res,res1,aggregated_by,graph_type, meas
     fig.update_layout(showlegend=False)
     return fig
 
-def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type, measurement_type,sort_values, plot_title):    
+def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type,sort_values, plot_title):    
     color_n=3
     if test_type=="speedtest":
         color_n=2
@@ -361,12 +364,13 @@ def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type, measurem
                       x=list(res.index),y=res[graph_type],name=graph_type,marker=dict(color=colors[color_n])),row=1, col=1)
         
     #fig.update_layout(xaxis=dict(tickmode='linear') )
-    if measurement_type in ["DOWNLOAD","UPLOAD"]:
+    measurement_type = subset["MES_TYPE"].unique()[0]
+    if measurement_type=="PING":
+        fig.update_layout(yaxis=dict(title="Miliseconds"))
+    else:
         fig.add_trace(go.Scatter(
                       x=sort_values,y=[limits[measurement_type]] * len(sort_values),
                       marker=dict(color="red"),mode='markers', name=str(limits[measurement_type])+"Mbps"),row=1, col=1)
-    else:
-        fig.update_layout(yaxis=dict(title="Miliseconds"))
     return fig
 
 
@@ -375,13 +379,13 @@ def combined_bar_plot_2traces(xvalues,yvalues1,yvalues2,name1,name2,title,xtitle
     trace1 = go.Bar(
             x=xvalues,
             y=yvalues1,
-            marker=dict(color=colors_iperf_speedtest["speedtest"]),
+            marker=dict(color=colors_iperf_speedtest["speedtest"],opacity=0.7),
             name=name1,
     )
     trace2 = go.Bar(
             x=xvalues,
             y=yvalues2,
-            marker=dict(color=colors_iperf_speedtest["iperf"]),
+            marker=dict(color=colors_iperf_speedtest["iperf"],opacity=0.7),
             name=name2,
     
     )
@@ -397,8 +401,8 @@ def combined_bar_plot_2traces(xvalues,yvalues1,yvalues2,name1,name2,title,xtitle
     iplot(fig)
 
     
-def get_fig_map(stat1,color_by2,measurement_type2):
-    if not stat1.empty:
+def get_fig_map(stat1,color_by2,plot_title):
+    #if not stat1.empty:
             stat1['text'] = stat1["SK_PI"].astype(str)+"."+stat1['name'] + " " + round(stat1[color_by2],2).astype(str)
             data = [ dict(
             type = 'scattergeo',
@@ -427,7 +431,7 @@ def get_fig_map(stat1,color_by2,measurement_type2):
             ))]
 
             layout = dict(
-            title = 'Devices colored by '+color_by2+' '+ measurement_type2,
+            title = plot_title,
             colorbar = True,
             geo = dict(
                 scope = 'north america',
@@ -444,11 +448,13 @@ def get_fig_map(stat1,color_by2,measurement_type2):
                 ),
                  lonaxis = dict(
                     gridwidth = 2,
-                    range= [ -120, -90 ],
+                    #range= [ -120, -90 ],
+                    range= [ -140, -55 ],
                     dtick = 10
                 ),
                 lataxis = dict (
-                    range= [ 47.0, 60.0 ],
+                    #range= [ 47.0, 60.0 ],
+                    range= [ 47.0, 72.0 ],
                     dtick = 10
                 )
                     ),
