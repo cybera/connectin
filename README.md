@@ -16,11 +16,11 @@ Update creds.env with your MS SQL host ip address, database name, user and passw
 >MSSQL_USER=   
 >MSSQL_PASSWORD=   
  
-Update INFLUXDB_ADMIN_PASSWORD and INFLUXDB_READ_USER_PASSWORD from default values.
+Update INFLUXDB_ADMIN_PASSWORD, INFLUXDB_READ_USER_PASSWORD and DASH_PASSWORD from default values.
 
 ### Docker
 
-Run **docker-compose up** to install all the components in Docker containers.   
+Run **docker-compose up** to install all the components in Docker containers.   :
 It will create 4 containers:
 
 - **Influxdb**: timeseries database to store data locally, database and two uesrs will be created to write and read data.
