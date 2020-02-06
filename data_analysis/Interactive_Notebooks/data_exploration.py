@@ -74,16 +74,18 @@ def connect_to_influxdb():
 
 def get_dataframe_from_influxdb(client_df, query_influx, table_name):
     result_query = client_df.query(query_influx)
-    result=result_query[table_name]
-    result.reset_index(level=0, inplace=True)
-    result['index']=result['index'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    result['index'] = pd.to_datetime(result['index'])
-    result.rename(columns={'index':'time'}, inplace=True)
-    result=result.sort_values(by=['time'], ascending=[False])
-    #create additional column "test type" - iperf or speedtest
-    result["test_type"]="speedtest"
-    result.loc[result["PROVIDER"]=="iperf","test_type"]="iperf"
-    result['SK_PI']=pd.to_numeric(result['SK_PI'])
+    result=pd.DataFrame()
+    if result_query:
+        result=result_query[table_name]
+        result.reset_index(level=0, inplace=True)
+        result['index']=result['index'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        result['index'] = pd.to_datetime(result['index'])
+        result.rename(columns={'index':'time'}, inplace=True)
+        result=result.sort_values(by=['time'], ascending=[False])
+        #create additional column "test type" - iperf or speedtest
+        result["test_type"]="speedtest"
+        result.loc[result["PROVIDER"]=="iperf","test_type"]="iperf"
+        result['SK_PI']=pd.to_numeric(result['SK_PI'])
     return result
 
 def get_all_data(client_df):
@@ -95,36 +97,43 @@ def get_all_data(client_df):
     
     query3 = "SELECT * FROM SPEEDTEST_IPERF_DOWNLOAD ORDER BY time;"
     df3 = get_dataframe_from_influxdb(client_df=client_df,query_influx=query3,table_name='SPEEDTEST_IPERF_DOWNLOAD')
-
-    df1["MES_TYPE"]="PING"
-    df1.rename(columns={"PING":"result"}, inplace=True)
-
-    df2["MES_TYPE"]="UPLOAD"
-    df2.rename(columns={"UPLOAD":"result"}, inplace=True)
-
-    df3["MES_TYPE"]="DOWNLOAD"
-    df3.rename(columns={"DOWNLOAD":"result"}, inplace=True)
-    df = pd.concat([df1,df2,df3])
-
-    #device number should be numeric for proper sorting
-    df['SK_PI']=pd.to_numeric(df['SK_PI'])
-
-    #common timezone
-    df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
     
-    #timezone by device
-    for key in timezones_by_device.keys():
-        df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+    df =pd.DataFrame()
+    if not df1.empty:
+        df1["MES_TYPE"]="PING"
+        df1.rename(columns={"PING":"result"}, inplace=True)
+        df = pd.concat([df,df1])
     
-    #removing timezone information  
-    df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
+    if not df2.empty:
+        df2["MES_TYPE"]="UPLOAD"
+        df2.rename(columns={"UPLOAD":"result"}, inplace=True)
+        df = pd.concat([df,df2])
 
-    #we will sort by time to have earliest time first
-    df = df.sort_values("time")
+    if not df3.empty:
+        df3["MES_TYPE"]="DOWNLOAD"
+        df3.rename(columns={"DOWNLOAD":"result"}, inplace=True)
+        df = pd.concat([df,df3])
+    
+    if not df.empty:
+        #device number should be numeric for proper sorting
+        df['SK_PI']=pd.to_numeric(df['SK_PI'])
 
-    #converting iperf test results into format comparable to speedtest
-    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
-    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
+        #common timezone
+        df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
+
+        #timezone by device
+        for key in timezones_by_device.keys():
+            df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+
+        #removing timezone information  
+        df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
+
+        #we will sort by time to have earliest time first
+        df = df.sort_values("time")
+
+        #converting iperf test results into format comparable to speedtest
+        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
+        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
     return df   
 
 def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
@@ -147,29 +156,33 @@ def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
     query = "SELECT * FROM "+mes_dict[mes_type]+" WHERE time <= '"+starting_point+"' AND time >= '"+end_point+"' ORDER BY time;"
     #print( query)
     df = get_dataframe_from_influxdb(client_df=client_df,query_influx=query,table_name=mes_dict[mes_type])
+    #print(df)
+    if not df.empty:
+        df["MES_TYPE"]=mes_type
+        df.rename(columns={mes_type:"result"}, inplace=True)
 
-    df["MES_TYPE"]=mes_type
-    df.rename(columns={mes_type:"result"}, inplace=True)
+        #device number should be numeric for proper sorting
+        df['SK_PI']=pd.to_numeric(df['SK_PI'])
 
-    #device number should be numeric for proper sorting
-    df['SK_PI']=pd.to_numeric(df['SK_PI'])
+        #common timezone
+        df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
 
-    #common timezone
-    df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
-    
-    #timezone by device
-    for key in timezones_by_device.keys():
-        df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
-    
-    #removing timezone information  
-    df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
+        #timezone by device
+        for key in timezones_by_device.keys():
+            df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
 
-    #we will sort by time to have earliest time first
-    df = df.sort_values("time")
+        #removing timezone information  
+        df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
 
-    #converting iperf test results into format comparable to speedtest
-    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
-    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
+        #we will sort by time to have earliest time first
+        df = df.sort_values("time")
+
+        #converting iperf test results into format comparable to speedtest
+        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
+        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
+    else:
+        df = pd.DataFrame(columns = ['time', 'IP', 'result', 'PI_MAC', 'PROVIDER', 'PROVINCE', 'SK_PI',
+       'TEST_SERVER', 'test_type', 'MES_TYPE'])
     return df    
 
 def get_fig_raw_data_by_device(subset,subset1):
@@ -215,7 +228,7 @@ def get_fig_raw_data_6_months(subset,device_numbers, title = "Raw data: iperf an
     for device in device_numbers:
         subset1= subset[subset["SK_PI"]==device]
         fig.add_trace(
-            go.Scatter(x=subset1["time"], y=subset1["result"],mode='markers',opacity = 0.7,marker=dict(color=colors[device]),name = str(device)))
+            go.Scatter(x=subset1["time"], y=subset1["result"],mode='markers',opacity = 0.7,marker=dict(color=colors[device]),name = "device " + str(device)))
 
 
     fig.update_layout(
@@ -342,7 +355,7 @@ def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type,sort_valu
         x_title=aggregated_by, 
         subplot_titles=(plot_title, "Number of tests")
     )
-    fig.update_layout(yaxis=dict(title="Mbps"))
+    fig.update_layout(yaxis=dict(title="Mbps"))#,xaxis=dict(type="category"))
     
     fig.add_trace(go.Bar(opacity=0.5,
                       x=list(res.index),y=res["size"],name="number of tests",marker=dict(color=colors[color_n])),row=2, col=1)
@@ -358,12 +371,13 @@ def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type,sort_valu
         for device in subset["SK_PI"].unique():
             subset1= subset[subset["SK_PI"]==device]
             fig.add_trace(go.Scatter(mode="markers",opacity=0.4,
-                      x=subset1[aggregated_by],y=subset1["result"],marker=dict(color=colors[device]),name = str(device)),
+                      x=subset1[aggregated_by],y=subset1["result"],marker=dict(color=colors[device]),name = "device " + str(device)),
                       row=1, col=1)
         fig.add_trace(go.Scatter(mode="lines+markers",
                       x=list(res.index),y=res[graph_type],name=graph_type,marker=dict(color=colors[color_n])),row=1, col=1)
         
     #fig.update_layout(xaxis=dict(tickmode='linear') )
+    fig.update_xaxes(tickmode='linear', row=2, col=1)
     measurement_type = subset["MES_TYPE"].unique()[0]
     if measurement_type=="PING":
         fig.update_layout(yaxis=dict(title="Miliseconds"))

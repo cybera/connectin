@@ -3,11 +3,13 @@ import dash_auth
 import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output,State
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
+
 from dateutil.relativedelta import relativedelta
 
-#import pathlib
 import sys
+
 sys.path.append('/home/connectin/data_analysis/Interactive_notebooks')
 from data_exploration import *
 
@@ -16,15 +18,43 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 app.config.suppress_callback_exceptions = True
 
 # get relative data folder
-#PATH = pathlib.Path(__file__).parent
+# import pathlib
+# PATH = pathlib.Path(__file__).parent
 
-#DATA_PATH = PATH.joinpath("data").resolve()
+# DATA_PATH = PATH.joinpath("data").resolve()
 
-USERNAME_PASSWORD = { os.environ['DASH_USER']: os.environ['DASH_PASSWORD']}
+USERNAME_PASSWORD = {os.environ['DASH_USER']: os.environ['DASH_PASSWORD']}
 auth = dash_auth.BasicAuth(
     app,
     USERNAME_PASSWORD
 )
+
+date_ranger_style = {
+    "width": "70%",
+    "display": "none",
+    "margin": "0 auto",
+    "font-family": "Geneva",
+    "textAlign": "center",
+    "color": "#407DFA"
+}
+
+dropdown_style70 = {
+    "width": "70%",
+    "display": "inline-block",
+    "margin": "0 auto",
+    "textAlign": "center",
+    "font-family": "Geneva",
+    "color": "#407DFA"
+}
+
+dropdown_style90 = {
+    "width": "90%",
+    "display": "inline-block",
+    "margin": "0 auto",
+    "textAlign": "center",
+    "font-family": "Geneva",
+    "color": "#407DFA",
+}
 
 
 def description():
@@ -40,18 +70,20 @@ def description():
         className="description-sidebar",
     )
 
+
 app.layout = html.Div(
     children=[
         html.Div(
             [
-                #html.Img(  Cybera logo?
+                # html.Img(  Cybera logo?
                 #    src=app.get_asset_url("dash-logo.png"), className="plotly-logo"
-                #),
+                # ),
                 html.H1(children="ConnectIn"),
                 description(),
                 html.Div(
                     # Empty child function for the callback - save intermediate data
-                    html.Div(id='intermediate-value', style={'display': 'none'}) #children='Enter a value and press submit')#
+                    html.Div(id='intermediate-value', style={'display': 'none'})
+                    # children='Enter a value and press submit')#
                 ),
                 html.Div(
                     [
@@ -59,99 +91,69 @@ app.layout = html.Div(
                         html.Div(
                             [
                                 dcc.Dropdown(
-                                options=[
-                                    {'label': 'Upload speed', 'value': 'UPLOAD'},
-                                    {'label': 'Download speed', 'value': 'DOWNLOAD'},
-                                    {'label': 'Ping latency', 'value': 'PING'}
-                                ],
-                                 value='DOWNLOAD',
-                                 style={
-                                     "width": "81%",
-                                      "display": "inline-block",
-                                      "margin": "0 auto",
-                                      "textAlign": "center",
-                                      "font-family": "Geneva",
-                                      "color": "#407DFA",
-                                      #"color": "#8898B2",
-                                      "backgroundColor": "#01183A",
-                                      "background": "#01183A"
-                                 },
-                                id="mes_dropdown", className="test_dropdown"
-                                 ),]
+                                    options=[
+                                        {'label': 'Upload speed', 'value': 'UPLOAD'},
+                                        {'label': 'Download speed', 'value': 'DOWNLOAD'},
+                                        {'label': 'Ping latency', 'value': 'PING'}
+                                    ],
+                                    value='DOWNLOAD',
+                                    style=dropdown_style70,
+                                    id="mes_dropdown"
+                                ), ]
                         ),
                     ],
-                   # className="metric_dropdown",
                 ),
                 html.Div(
                     [
-                    html.Div(
+                        html.Div(
                             [
                                 html.Br(),
-                               # html.Br(),
+                                # html.Br(),
                                 html.H6("Date"),
                                 dcc.RadioItems(
-                                options=[
-                                {'label': 'Range', 'value': 'RANGE'},
-                                {'label': 'From/To', 'value': 'FROMTO'}
-                                 ],
-                                value='RANGE',
-                                labelStyle={'display': 'inline-block'},
-                                id="date_radio"
+                                    options=[
+                                        {'label': 'Interval', 'value': 'RANGE'},
+                                        {'label': 'From/To', 'value': 'FROMTO'}
+                                    ],
+                                    value='RANGE',
+                                    labelStyle={'display': 'inline-block'},
+                                    id="date_radio"
                                 ),
                             ]
                         ),
-                    html.Div(
-                        [
-                        dcc.Dropdown(
-                                options=[
-                                    {'label': 'Last 6 months', 'value': '6'},
-                                    {'label': 'Last year', 'value': '12'},
-                                    {'label': 'All data', 'value': '0'}
-                                ],
-                                 value='6',
-                                style={
-                                     "width": "80%",
-                                      "display": "inline-block",
-                                      "margin": "0 auto",
-                                      "textAlign": "center",
-                                      "font-family": "Geneva",
-                                       "color": "#407DFA",
-                                      "backgroundColor": "#01183A",
-                                      "background": "#01183A"
-                                 },
-                            id='date_dropdown', className="test_dropdown"
-                                 ),]
-                     ),
-                    html.Br(),
-                    html.Br(),
-                    html.Div(
-                        [
-                        dcc.DatePickerRange(
-                        id='date-picker-range',
-                        #initial_visible_month=datetime.today(),
-                        #start_date = datetime.now().replace(microsecond=0,second=0,hour=0,minute=0)  - datetime.timedelta(months=6),
-                        start_date = datetime.now() + relativedelta(months=-6),
-                        end_date = datetime.now(),
-                        display_format='MMM Do, YY',
-                        style={
-                                      "width": "60%",
-                                      "display": "none",
-                                      "margin": "0 auto",
-                                      "textAlign": "center",
-                                      "font-family": "Geneva",
-                                      "color": "#407DFA",
-                                      "backgroundColor": "#01183A",
-                                      "background": "#01183A"
-                                 }
-                        )
-                        ]
-                    ),
+                        html.Br(),
+                        html.Div(
+                            [
+                                dcc.Dropdown(
+                                    options=[
+                                        {'label': 'Last 3 months', 'value': '3'},
+                                        {'label': 'Last 6 months', 'value': '6'},
+                                        {'label': 'Last year', 'value': '12'}
+                                        # {'label': 'All data', 'value': '0'}
+                                    ],
+                                    value='6',
+                                    style=dropdown_style70,
+                                    id='date_dropdown'
+                                ), ]
+                        ),
+                        html.Br(),
+                        html.Br(),
+                        html.Div(
+                            [
+                                dcc.DatePickerRange(
+                                    id='date-picker-range',
+                                    start_date=datetime.now() + relativedelta(months=-6),
+                                    end_date=datetime.now(),
+                                    # display_format='MMM Do, YY',
+                                    style=date_ranger_style
+                                )
+                            ]
+                        ),
                     ],
-                    className="date_selection",
                 ),
                 html.Br(),
                 html.Button(
-                    children="Get data", id="button-db", n_clicks=0, className="button_submit"
+                    children="Get data", id="button-db", className="button_submit"
                 ),
                 html.Br(),
             ],
@@ -164,7 +166,7 @@ app.layout = html.Div(
                     value="raw-tab",
                     children=[
                         dcc.Tab(label="RAW DATA", value="raw-tab"),
-                        dcc.Tab(label="AGGREAGTED DATA", value="agg-tab"),
+                        dcc.Tab(label="AGGREGATED DATA", value="agg-tab"),
                         dcc.Tab(label="MAP AND STATISTICS", value="map-tab"),
                     ],
                     className="tabs",
@@ -172,12 +174,8 @@ app.layout = html.Div(
                 html.Div(
                     id="connectin-tabs-content",
                     className="canvas",
-                    #style={"text-align": "left", "margin": "auto"},
+                    style={"text-align": "left", "margin": "auto"},
                 ),
-              #  html.Div(className="upload_zone", id="upload-stitch", children=[]),
-              #  html.Div(id="sh_x", hidden=True),
-              #  html.Div(id="stitched-res", hidden=True),
-                dcc.Store(id="memory-df"),
             ],
             className="eight columns result",
         ),
@@ -185,69 +183,65 @@ app.layout = html.Div(
     className="row twelve columns",
 )
 
+
 @app.callback(Output('connectin-tabs-content', 'children'),
               [Input('connectin-tabs', 'value')])
 def render_content(tab):
     if tab == 'raw-tab':
         return html.Div([
-           # html.Br(),
-          #  html.Div([
-          #      html.H6('Number of tests'),
-          #      dcc.Graph(
-           #         id='graph1-tab1',
-          #          style={'height': 300}
-           #     )]),
+            html.Br(),
+            #  html.Div([
+            #      html.H6('Number of tests'),
+            #      dcc.Graph(
+            #         id='graph1-tab1',
+            #          style={'height': 300}
+            #     )]),
             html.Div([
-             #   html.Hr(),
-             #   html.H6('Timeline by device'),
+                #   html.Hr(),
+                #   html.H6('Timeline by device'),
                 html.Div([
-                dcc.RadioItems(
-                    options=[
-                    {'label': 'Speedtest', 'value': 'speedtest'},
-                    {'label': 'Iperf', 'value': 'iperf'}
-                    ],
-                    value='speedtest',
-                    labelStyle={'display': 'inline-block'},
-                    id="speedtest_iperf_tab1",
-                    style={
-                    'width': '70%'#,
-                    #'textAlign': 'center'
-                     }
-                )],className="four columns"),
+                    dcc.RadioItems(
+                        options=[
+                            {'label': 'Speedtest', 'value': 'speedtest'},
+                            {'label': 'Iperf', 'value': 'iperf'}
+                        ],
+                        value='speedtest',
+                        labelStyle={'display': 'inline-block'},
+                        id="speedtest_iperf_tab1",
+                        style={
+                            'width': '70%'
+                        }
+                    )], className="three columns"),
                 html.Div([
-                dcc.Dropdown(
-                options=[
-                    {'label': 'All devices', 'value': 'ALL'},
-                    {'label': '1', 'value': '1'},
-                ],
-                value='ALL',
-                id="device_tab1",
-                clearable=False,
-                style={
-                    "width": "70%",
-                    "textAlign": "center",
-                    "font-family": "Geneva",
-                    "color": "#407DFA"
-                }
-                )], className="four columns"),
-           ], className="row" ),
+                    dcc.Dropdown(
+                        options=[
+                            {'label': 'All devices', 'value': 'ALL'},
+                            {'label': '1', 'value': '1'},
+                        ],
+                        value='ALL',
+                        id="device_tab1",
+                        clearable=False,
+                        style=dropdown_style90
+                    )], className="three columns"),
+            ], className="row"),
             html.Div([
-            dcc.Graph(
-                id='graph2-tab1'
-         )
-         ])#,
-           # html.Div([
-                #      html.H6('Number of tests'),
-               #       dcc.Graph(
-               #          id='graph1-tab1',
-               #          style={'height': 200}
-                #     )])
+                dcc.Graph(
+                    id='graph2-tab1'
+                )
+            ])  # ,
+            # html.Div([
+            #      html.H6('Number of tests'),
+            #       dcc.Graph(
+            #          id='graph1-tab1',
+            #          style={'height': 200}
+            #     )])
         ])
     elif tab == 'agg-tab':
         return html.Div([
+            html.Br(),
             html.Div([
-                #html.Hr(),
-                #html.H6('Summary by device'),
+                # html.Hr(),
+                # html.H6('Summary by device'),
                 html.Div([
                     dcc.RadioItems(
                         options=[
@@ -258,8 +252,7 @@ def render_content(tab):
                         labelStyle={'display': 'inline-block'},
                         id="speedtest_iperf_tab2",
                         style={
-                            'width': '70%'  # ,
-                            # 'textAlign': 'center'
+                            'width': '70%'
                         }
                     )], className="three columns"),
                 html.Div([
@@ -271,48 +264,33 @@ def render_content(tab):
                         value='ALL',
                         id="device_tab2",
                         clearable=False,
-                        style={
-                            "width": "70%",
-                            "textAlign": "center",
-                            "font-family": "Geneva",
-                            "color": "#407DFA"
-                        }
+                        style=dropdown_style90
                     )], className="three columns"),
                 html.Div([
                     dcc.Dropdown(
                         options=[
-                            {'label': 'boxplot', 'value': 'boxplot'},
-                            {'label': 'mean', 'value': 'mean'},
-                            {'label': 'max', 'value': 'max'}
+                            {'label': 'Graph type: boxplot', 'value': 'boxplot'},
+                            {'label': 'Graph type: average', 'value': 'mean'},
+                            {'label': 'Graph type: maximum', 'value': 'max'}
                         ],
-                        value='boxplot',
+                        value='mean',
                         id="type_tab2",
                         clearable=False,
-                        style={
-                            "width": "70%",
-                            "textAlign": "center",
-                            "font-family": "Geneva",
-                            "color": "#407DFA"
-                        }
+                        style=dropdown_style90
                     )], className="three columns"),
                 html.Div([
                     dcc.Dropdown(
                         options=[
-                            {'label': 'year', 'value': 'year'},
-                            {'label': 'month', 'value': 'month'},
-                            {'label': 'day', 'value': 'day'},
-                            {'label': 'weekday', 'value': 'weekday'},
-                            {'label': 'hour', 'value': 'hour'}
+                            {'label': 'Aggregate by: year', 'value': 'year'},
+                            {'label': 'Aggregate by: month', 'value': 'month'},
+                            {'label': 'Aggregate by: day', 'value': 'day'},
+                            {'label': 'Aggregate by: weekday', 'value': 'weekday'},
+                            {'label': 'Aggregate by: hour', 'value': 'hour'}
                         ],
                         value='month',
                         id="agg_tab2",
                         clearable=False,
-                        style={
-                            "width": "70%",
-                            "textAlign": "center",
-                            "font-family": "Geneva",
-                            "color": "#407DFA"
-                        }
+                        style=dropdown_style90
                     )], className="three columns")
             ], className="row"),
             html.Div([
@@ -323,9 +301,10 @@ def render_content(tab):
         ])
     elif tab == 'map-tab':
         return html.Div([
+            html.Br(),
             html.Div([
-                #html.Hr(),
-                #html.H6('Summary by device'),
+                # html.Hr(),
+                # html.H6('Summary by device'),
                 html.Div([
                     dcc.RadioItems(
                         options=[
@@ -336,10 +315,9 @@ def render_content(tab):
                         labelStyle={'display': 'inline-block'},
                         id="speedtest_iperf_tab3",
                         style={
-                            'width': '70%'  # ,
-                            # 'textAlign': 'center'
+                            'width': '70%'
                         }
-                    )], className="four columns"),
+                    )], className="three columns"),
                 html.Div([
                     dcc.Dropdown(
                         options=[
@@ -349,34 +327,24 @@ def render_content(tab):
                         value='ALL',
                         id="device_tab3",
                         clearable=False,
-                        style={
-                            "width": "70%",
-                            "textAlign": "center",
-                            "font-family": "Geneva",
-                            "color": "#407DFA"
-                        }
+                        style=dropdown_style90
                     )], className="three columns"),
                 html.Div([
-                    #html.Label(["Color By",
+                    # html.Label(["Color By",
                     dcc.Dropdown(
                         options=[
-                            {'label': 'color by mean', 'value': 'mean'},
-                            {'label': 'color by median', 'value': 'median'},
-                            {'label': 'color by std', 'value': 'std'},
-                            {'label': 'color by min', 'value': 'min'},
-                            {'label': 'color bymax', 'value': 'max'}
+                            {'label': 'Color by: average', 'value': 'mean'},
+                            {'label': 'Color by: median', 'value': 'median'},
+                            {'label': 'Color by: standart deviation', 'value': 'std'},
+                            {'label': 'Color by: minimum', 'value': 'min'},
+                            {'label': 'Color by: maximum', 'value': 'max'}
                         ],
                         value='mean',
                         id="col_tab3",
                         clearable=False,
-                        style={
-                            "width": "80%",
-                            "textAlign": "center",
-                            "font-family": "Geneva",
-                            "color": "#407DFA"
-                        }
-                    )#])
-                     ], className="four columns")
+                        style=dropdown_style90
+                    )  # ])
+                ], className="three columns")
             ], className="row"),
             html.Div([
                 dcc.Graph(
@@ -385,10 +353,37 @@ def render_content(tab):
             ]),
             dash_table.DataTable(
                 id='table-tab3',
+                columns=[{'name': 'device_number', 'id': 'device_number'},
+                         {'name': 'number_of_tests', 'id': 'number_of_tests'},
+                         {'name': 'mean', 'id': 'mean'},
+                         {'name': 'std', 'id': 'std'},
+                         {'name': 'median', 'id': 'median'},
+                         {'name': 'min', 'id': 'min'},
+                         {'name': 'max', 'id': 'max'}],
+                data=[{
+                    'device_number': " ",
+                    'number_of_tests': " ",
+                    'mean': " ",
+                    'std': " ",
+                    'median': " ",
+                    'min': " ",
+                    'max': " "}],
+                fixed_rows={'headers': True, 'data': 0},
                 style_table={
-                    'maxHeight': '180px',
+                    'maxHeight': '160px',
                     'overflowY': 'scroll'
                 },
+                style_header={
+                    'backgroundColor': 'rgb(230, 230, 230)',
+                    'fontWeight': 'bold',
+                    'textAlign': 'center',
+                    "font-family": "Geneva",
+                    "color": "#407DFA"
+                },
+                style_cell={
+                    'textAlign': 'center',
+                    "font-family": "Geneva"
+                }
             )
         ])
 
@@ -400,46 +395,43 @@ def render_content(tab):
                State('date_dropdown', 'value'),
                State('date-picker-range', 'start_date'),
                State('date-picker-range', 'end_date')])
-def get_data(n_clicks,mes_type,date_type,date_range,start_date, end_date):
-     # some expensive clean data step
-     client, client_df = connect_to_influxdb()
-     if date_type == 'RANGE':
-         df = measurment_by_range(client_df, mes_type, 0, int(date_range))
-     else:
-         if start_date is not None:
-             start_date = datetime.strptime(start_date[0:10], '%Y-%m-%d')
-         else:
-             start_date = 0
-         if end_date is not None:
-             end_date = datetime.strptime(end_date[0:10], '%Y-%m-%d')
-         else:
-             end_date = 0
-         df = measurment_by_range(client_df,mes_type,end_date,start_date)
+def get_data(n_clicks, mes_type, date_type, date_range, start_date, end_date):
+    if n_clicks is None:
+        raise PreventUpdate
+    else:
+        client, client_df = connect_to_influxdb()
+        if date_type == 'RANGE':
+            df = measurment_by_range(client_df, mes_type, 0, int(date_range))
+        else:
+            if start_date is not None:
+                start_date = datetime.strptime(start_date[0:10], '%Y-%m-%d')
+            else:
+                start_date = 0
+            if end_date is not None:
+                end_date = datetime.strptime(end_date[0:10], '%Y-%m-%d')
+            else:
+                end_date = 0
+            df = measurment_by_range(client_df, mes_type, end_date, start_date)
 
-     # more generally, this line would be
-     # json.dumps(df)
-     #return "clicked "+ str(n_clicks)
-     return df.to_json(date_format='iso', orient='split')
+        return df.to_json(date_format='iso', orient='split')
+
 
 @app.callback(Output('graph2-tab1', 'figure'),
               [Input('intermediate-value', 'children'),
                Input('speedtest_iperf_tab1', 'value'),
                Input('device_tab1', 'value')])
-def update_graph(jsonified_data,test_type,device):
-
-    # more generally, this line would be
-    # json.loads(jsonified_cleaned_data)
+def update_graph_tab1(jsonified_data, test_type, device):
+    figure = go.Figure()
     if jsonified_data:
         df = pd.read_json(jsonified_data, orient='split')
-        if device=="ALL":
+        if device == "ALL":
             subset = df[df["test_type"] == test_type]
         else:
             subset = df[(df["test_type"] == test_type) & (df["SK_PI"] == int(device))]
-        subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
-        device_numbers = subset["SK_PI"].unique()
-        figure = get_fig_raw_data_6_months(subset, device_numbers, " ")
-    else:
-        figure = go.Figure()
+        if not subset.empty:
+            subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
+            device_numbers = subset["SK_PI"].unique()
+            figure = get_fig_raw_data_6_months(subset, device_numbers, " ")
     return figure
 
 
@@ -449,33 +441,32 @@ def update_graph(jsonified_data,test_type,device):
                Input('device_tab2', 'value'),
                Input('agg_tab2', 'value'),
                Input('type_tab2', 'value')])
-def update_graph_tab2(jsonified_data,test_type,device,aggregated_by,graph_type):
-
-
+def update_graph_tab2(jsonified_data, test_type, device, aggregated_by, graph_type):
+    figure = go.Figure()
     if jsonified_data:
         df = pd.read_json(jsonified_data, orient='split')
-        if device=="ALL":
+        if device == "ALL":
             subset = df[df["test_type"] == test_type]
         else:
             subset = df[(df["test_type"] == test_type) & (df["SK_PI"] == int(device))]
-        subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
-        subset["year"] = subset["time"].dt.year
-        subset["month"] = subset["time"].dt.month
-        subset["day"] = subset["time"].dt.day
-        subset["hour"] = subset["time"].dt.hour
-        subset["weekday"] = subset["time"].dt.weekday_name
-        subset["weekday"] = pd.Categorical(subset["weekday"],
-                                       ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+        if not subset.empty:
+            subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
+            subset["year"] = subset["time"].dt.year
+            subset["month"] = subset["time"].dt.month
+            subset["day"] = subset["time"].dt.day
+            subset["hour"] = subset["time"].dt.hour
+            subset["weekday"] = subset["time"].dt.weekday_name
+            subset["weekday"] = pd.Categorical(subset["weekday"],
+                                               ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+                                                "Sunday"])
 
-        subset = subset.sort_values(aggregated_by)
+            subset = subset.sort_values(aggregated_by)
 
-        stat = subset[[aggregated_by, "result"]].groupby(aggregated_by).agg(["mean", "max", "size"])[
-            "result"]
-        figure = get_fig_agg_6_months(subset, stat, test_type,aggregated_by, graph_type,
-                                   subset[aggregated_by].sort_values().unique(),
-                                   " ")
-    else:
-        figure = go.Figure()
+            stat = subset[[aggregated_by, "result"]].groupby(aggregated_by).agg(["mean", "max", "size"])[
+                "result"]
+            figure = get_fig_agg_6_months(subset, stat, test_type, aggregated_by, graph_type,
+                                          subset[aggregated_by].sort_values().unique(),
+                                          " ")
     return figure
 
 
@@ -484,183 +475,154 @@ def update_graph_tab2(jsonified_data,test_type,device,aggregated_by,graph_type):
                Input('speedtest_iperf_tab3', 'value'),
                Input('device_tab3', 'value'),
                Input('col_tab3', 'value')])
-def update_graph_tab3(jsonified_data,test_type,device,color_by):
-
+def update_graph_tab3(jsonified_data, test_type, device, color_by):
+    figure = go.Figure()
     if jsonified_data:
         df = pd.read_json(jsonified_data, orient='split')
-        if device=="ALL":
+        if device == "ALL":
             subset = df[df["test_type"] == test_type]
         else:
             subset = df[(df["test_type"] == test_type) & (df["SK_PI"] == int(device))]
-        subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
-        stat = summary_stat(subset)
-        coordinates_df = pd.DataFrame(columns=["device_number", "name", "lon", "lat"])
-        if path.exists(coordinates_path):
-            coordinates_df = pd.read_csv(coordinates_path)
-        stat1 = pd.merge(stat, coordinates_df, left_on="SK_PI", right_on="device_number", how="inner")
-        figure = get_fig_map(stat1, color_by, " ")
-    else:
-        figure = go.Figure()
+        if not subset.empty:
+            subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
+            stat = summary_stat(subset)
+            coordinates_df = pd.DataFrame(columns=["device_number", "name", "lon", "lat"])
+            if path.exists(coordinates_path):
+                coordinates_df = pd.read_csv(coordinates_path)
+            stat1 = pd.merge(stat, coordinates_df, left_on="SK_PI", right_on="device_number", how="inner")
+            figure = get_fig_map(stat1, color_by, " ")
     return figure
+
 
 @app.callback([Output('table-tab3', 'columns'),
                Output('table-tab3', 'data')],
               [Input('intermediate-value', 'children'),
                Input('speedtest_iperf_tab3', 'value'),
                Input('device_tab3', 'value')])
-def update_table_tab3(jsonified_data,test_type,device):
-
+def update_table_tab3(jsonified_data, test_type, device):
+    columns = [{'name': 'device_number', 'id': 'device_number'},
+               {'name': 'number_of_tests', 'id': 'number_of_tests'},
+               {'name': 'mean', 'id': 'mean'},
+               {'name': 'std', 'id': 'std'},
+               {'name': 'median', 'id': 'median'},
+               {'name': 'min', 'id': 'min'},
+               {'name': 'max', 'id': 'max'}]
+    data = [{
+        'device_number': " ",
+        'number_of_tests': " ",
+        'mean': " ",
+        'std': " ",
+        'median': " ",
+        'min': " ",
+        'max': " "}]
     if jsonified_data:
         df = pd.read_json(jsonified_data, orient='split')
-        if device=="ALL":
+        if device == "ALL":
             subset = df[df["test_type"] == test_type]
         else:
             subset = df[(df["test_type"] == test_type) & (df["SK_PI"] == int(device))]
-        subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
-        measurement_type=subset["MES_TYPE"].unique()[0]
-        if measurement_type in ["UPLOAD", "DOWNLOAD"]:
-            treshold = limits[measurement_type]
-            stat = summary_stat(subset, treshold)
-            stat["t-test"] = "N/A"
-            devices = stat[(stat["size"] > test_size)]["SK_PI"]
-            for device in devices:
-                subset_device = subset[subset["SK_PI"] == device]
-                stat.loc[stat["SK_PI"] == device, "t-test"] = get_ttest_device(subset_device["result"], treshold)
-        else:
-            stat = summary_stat(subset)
-        stat = stat.round(2)
-        stat.rename(columns={'SK_PI': 'device_number','size':'number_of_tests'}, inplace=True)
-        del stat['MES_TYPE']
-        columns = [{"name": i, "id": i} for i in stat.columns]
-        data = stat.to_dict('records')
-        return columns, data
+        if not subset.empty:
+            subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
+            measurement_type = subset["MES_TYPE"].unique()[0]
+            if measurement_type in ["UPLOAD", "DOWNLOAD"]:
+                treshold = limits[measurement_type]
+                stat = summary_stat(subset, treshold)
+                stat["t-test"] = "N/A"
+                devices = stat[(stat["size"] > test_size)]["SK_PI"]
+                for device in devices:
+                    subset_device = subset[subset["SK_PI"] == device]
+                    stat.loc[stat["SK_PI"] == device, "t-test"] = get_ttest_device(subset_device["result"], treshold)
+            else:
+                stat = summary_stat(subset)
+            stat = stat.round(2)
+            stat.rename(columns={'SK_PI': 'device_number', 'size': 'number_of_tests'}, inplace=True)
+            del stat['MES_TYPE']
+            columns = [{"name": i, "id": i} for i in stat.columns]
+            data = stat.to_dict('records')
+    return columns, data
 
 
+# @app.callback(Output('graph1-tab1', 'figure'),
+#              [Input('intermediate-value', 'children')])
+# def update_graph1(jsonified_data):
+#
+#   figure = go.Figure()
 
+#   if jsonified_data:
+#       df = pd.read_json(jsonified_data, orient='split')
+#       summary_stat = df.groupby(["SK_PI", "test_type"]).size().unstack().reset_index()
+#       trace1 = go.Bar(
+#           x=summary_stat["SK_PI"],
+#           y=summary_stat["speedtest"],
+#           marker=dict(color=colors_iperf_speedtest["speedtest"]),
+#           name="speedtest",
+#       )
+#       trace2 = go.Bar(
+#           x=summary_stat["SK_PI"],
+#           y=summary_stat["iperf"],
+#           marker=dict(color=colors_iperf_speedtest["iperf"]),
+#           name="iperf",
 
-@app.callback(Output('graph1-tab1', 'figure'),
-              [Input('intermediate-value', 'children')])
-def update_graph1(jsonified_data):
+#      )
+#      data = [trace1, trace2]
+#      layout = go.Layout(
+#          barmode='stack',
+#          #title="Number of tests",
+#          xaxis=dict(title="Device number", tickmode='linear'),
+#          yaxis=dict(title="Number of tests")
+#      )
+#
+#      figure = go.Figure(data=data, layout=layout)
 
-    figure = go.Figure()
-
-    if jsonified_data:
-        df = pd.read_json(jsonified_data, orient='split')
-        summary_stat = df.groupby(["SK_PI", "test_type"]).size().unstack().reset_index()
-        trace1 = go.Bar(
-            x=summary_stat["SK_PI"],
-            y=summary_stat["speedtest"],
-            marker=dict(color=colors_iperf_speedtest["speedtest"]),
-            name="speedtest",
-        )
-        trace2 = go.Bar(
-            x=summary_stat["SK_PI"],
-            y=summary_stat["iperf"],
-            marker=dict(color=colors_iperf_speedtest["iperf"]),
-            name="iperf",
-
-        )
-        data = [trace1, trace2]
-        layout = go.Layout(
-            barmode='stack',
-            #title="Number of tests",
-            xaxis=dict(title="Device number", tickmode='linear'),
-            yaxis=dict(title="Number of tests")
-        )
-
-        figure = go.Figure(data=data, layout=layout)
-
-    return figure
+#  return figure
 
 
 @app.callback(Output('device_tab1', 'options'),
               [Input('intermediate-value', 'children'),
                Input('speedtest_iperf_tab1', 'value')])
-def update_device_numbers(jsonified_data,test_type):
+def update_device_numbers1(jsonified_data, test_type):
+    return update_device_numbers(jsonified_data, test_type)
 
-    result = [{'label': 'All devices', 'value': 'ALL'}]
-    if jsonified_data:
-        df = pd.read_json(jsonified_data, orient='split')
-        subset = df[df["test_type"] == test_type]
-        device_numbers = subset["SK_PI"].sort_values().unique()
-        list1 = [{'label': str(i), 'value': str(i)} for i in device_numbers]
-        result = list1+result
-    return result
 
 @app.callback(Output('device_tab2', 'options'),
               [Input('intermediate-value', 'children'),
                Input('speedtest_iperf_tab2', 'value')])
-def update_device_numbers2(jsonified_data,test_type):
+def update_device_numbers2(jsonified_data, test_type):
+    return update_device_numbers(jsonified_data, test_type)
 
-    result = [{'label': 'All devices', 'value': 'ALL'}]
-    if jsonified_data:
-        df = pd.read_json(jsonified_data, orient='split')
-        subset = df[df["test_type"] == test_type]
-        device_numbers = subset["SK_PI"].sort_values().unique()
-        list1 = [{'label': str(i), 'value': str(i)} for i in device_numbers]
-        result = list1+result
-    return result
 
 @app.callback(Output('device_tab3', 'options'),
               [Input('intermediate-value', 'children'),
                Input('speedtest_iperf_tab3', 'value')])
-def update_device_numbers3(jsonified_data,test_type):
+def update_device_numbers3(jsonified_data, test_type):
+    return update_device_numbers(jsonified_data, test_type)
 
+
+def update_device_numbers(jsonified_data, test_type):
     result = [{'label': 'All devices', 'value': 'ALL'}]
     if jsonified_data:
         df = pd.read_json(jsonified_data, orient='split')
         subset = df[df["test_type"] == test_type]
         device_numbers = subset["SK_PI"].sort_values().unique()
-        list1 = [{'label': str(i), 'value': str(i)} for i in device_numbers]
-        result = list1+result
+        list1 = [{'label': 'Device ' + str(i), 'value': str(i)} for i in device_numbers]
+        result = list1 + result
     return result
 
 
 @app.callback(
-   [Output('date-picker-range', 'style'),
-    Output('date_dropdown', 'style')],
-   [Input('date_radio', 'value')])
-
+    [Output('date-picker-range', 'style'),
+     Output('date_dropdown', 'style')],
+    [Input('date_radio', 'value')])
 def show_hide_element(visibility_state):
+    r_style = date_ranger_style.copy()
+    d_style = dropdown_style70.copy()
     if visibility_state == 'FROMTO':
-        return {"width": "60%",
-                 "display": "inline-block",
-                 "margin": "0 auto",
-                 "textAlign": "center",
-                 "font-family": "Geneva",
-                 "color": "#407DFA",
-                 "backgroundColor": "#01183A",
-                 "background": "#01183A"
-                  },\
-               {
-                  "width": "80%",
-                   'display': 'none',
-                   "margin": "0 auto",
-                   "textAlign": "center",
-                   "font-family": "Geneva",
-                   "color": "#407DFA",
-                   "backgroundColor": "#01183A",
-                   "background": "#01183A"
-         }
+        d_style['display'] = 'none'
+        r_style['display'] = 'inline-block'
     elif visibility_state == 'RANGE':
-        return {"width": "60%",
-                "display": "none",
-                 "margin": "0 auto",
-                 "textAlign": "center",
-                 "font-family": "Geneva",
-                 "color": "#407DFA",
-                 "backgroundColor": "#01183A",
-                "background": "#01183A"}\
-            ,{
-                   "width": "80%",
-                   "display": "inline-block",
-                   "margin": "0 auto",
-                   "textAlign": "center",
-                   "font-family": "Geneva",
-                   "color": "#407DFA",
-                   "backgroundColor": "#01183A",
-                   "background": "#01183A"
-               }
+        r_style['display'] = 'none'
+        d_style['display'] = 'inline-block'
+    return r_style, d_style
 
 
 if __name__ == "__main__":

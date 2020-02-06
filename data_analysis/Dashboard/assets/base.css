@@ -171,18 +171,6 @@ body {
   margin-bottom: 20px
 }
 
-.test_dropdown {
-    width: 81%;
-    display: inline-block;
-    margin: 0 auto;
-    textAlign: center;
-    font-family: Geneva;
-    color: #407DFA;
-    backgroundColor: #01183A;
-    background: #01183A;
-   }
-
-
 /* Typography
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 h1, h2, h3, h4, h5, h6 {
@@ -547,12 +535,13 @@ input[type="text"],
 input[type="tel"],
 input[type="url"],
 input[type="password"],
+input[type="date"],
 textarea,
 select {
   
   margin-left: 9%;
-  height: 30px;
-  width: 50%;
+  height: 35px;
+  width: 80%;
   box-sizing: border-box;
   padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
 #  background-color: transparent;
@@ -575,6 +564,7 @@ input[type="text"],
 input[type="tel"],
 input[type="url"],
 input[type="password"],
+input[type="date"],
 textarea {
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -590,6 +580,7 @@ input[type="text"]:focus,
 input[type="tel"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
+input[type="date"]:focus,
 textarea:focus,
 select:focus {
   border: 1px solid #33C3F0;
@@ -939,6 +930,7 @@ there.
   input[type="tel"],
   input[type="url"],
   input[type="password"],
+  input[type="date"],
   textarea,
   select {
 
@@ -1195,6 +1187,7 @@ there.
   input[type="tel"],
   input[type="url"],
   input[type="password"],
+  input[type="date"],
   textarea,
   select {
 
