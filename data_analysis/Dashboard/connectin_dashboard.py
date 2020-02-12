@@ -78,7 +78,7 @@ app.layout = html.Div(
                 # html.Img(  Cybera logo?
                 #    src=app.get_asset_url("dash-logo.png"), className="plotly-logo"
                 # ),
-                html.H1(children="ConnectIn"),
+                html.H1(children="ConnectIN"),
                 description(),
                 html.Div(
                     # Empty child function for the callback - save intermediate data
@@ -226,7 +226,8 @@ def render_content(tab):
             ], className="row"),
             html.Div([
                 dcc.Graph(
-                    id='graph2-tab1'
+                    id='graph2-tab1',
+                    style={'height': '70vh'}
                 )
             ])  # ,
             # html.Div([
@@ -295,7 +296,8 @@ def render_content(tab):
             ], className="row"),
             html.Div([
                 dcc.Graph(
-                    id='graph1-tab2'
+                    id='graph1-tab2',
+		    style={'height': '70vh'}
                 )
             ])
         ])
