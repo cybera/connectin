@@ -123,7 +123,8 @@ def get_all_data(client_df):
 
         #timezone by device
         for key in timezones_by_device.keys():
-            df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+            if not df.loc[df["SK_PI"]==key,'time'].empty:
+                df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
 
         #removing timezone information  
         df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
@@ -169,7 +170,8 @@ def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
 
         #timezone by device
         for key in timezones_by_device.keys():
-            df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+            if not df.loc[df["SK_PI"]==key,'time'].empty:
+                   df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
 
         #removing timezone information  
         df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
