@@ -57,8 +57,39 @@ Coordinates used for the project are [here](https://docs.google.com/spreadsheets
  
 ### Timezones
 
-Timezone for all the devices is set in config.json 
+Common timezone for all the devices is set in config.json 
 
 If some of the devices have different timezone - it can be specified by device number in `data_analysis/timezone_by_device.csv`:  copy example file into `timezone_by_device.csv` and add timezones manually: 
 
 >cp data_analysis/timezone_by_device.csv.example data_analysis/timezone_by_device.csv
+
+## Dashboard 
+
+Dashboard is accessible at http://localhost:8050/. It has basic authentication enabled. (Credentials are stored in creds.env file)
+
+In order to use it - select metric (Upload/Download/Ping) and  time interval. When you press "Get  data"  - data will be selected from the database and stored in browser cache. Then plots on all the tabs will be populated with cached data.
+In order to get another metric/time interval from database - press "Get data" button again.
+
+**Note:** Dashboard works faster when running it locally as opposed to hosting it on the web. When hosted - cached data need to be transported over the web and it slows it down.
+
+## InfluxDb structure
+[InfluxDB](https://docs.influxdata.com/influxdb/v1.7/) is a timeseries database storing everything in measurements (tables) as tags(metagata)  and fields(values).
+
+InfluxDB scheme used for the project is stored in config.json.
+There are separate measurements for Ping, Upload and Download data. Both iperf and speedtest test results are stored in single measurement with different meatadata.
+
+### Metadata 
+
+Following metadata is stored for every measurement :
+ - Provider - ISP for speedtest tests, "iperf" for iperf tests
+ - IP - IP address of the device,
+ - Test Server - name of the test server,
+ - Province - province for speedtest tests,"iperf" for iperf tests
+ - SK_PI - device number,
+ - PI_MAC - device mac address
+
+
+## Collectd data
+
+Another set of tests is stored in MS SQL database - metrics coming from collectd. These metrics are collected every 5 seconds and have ping latency, ping droprate and lots of others. These metrics were not used in the analysis. If you want to use them - please replace config.json with config_full.json and recreate docker containers. It will import 3 additonal metrics from MS SQL - ping latency, ping droprate and conntrack.  They are not included in the dashboard - but some of the original jupyter notebooks analyze these metrics.
+
