@@ -541,14 +541,14 @@ select {
   
   margin-left: 9%;
   height: 35px;
-  width: 80%;
+  width: 76%;
   box-sizing: border-box;
   padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
-#  background-color: transparent;
+  background-color: transparent;
   border: 1px solid #8898B2;
   border-radius: 4px;
   box-shadow: none;
-  box-sizing: border-box; 
+#  box-sizing: border-box; 
   font-family: "Geneva", "Tahoma", "Verdana", "sans-serif";
   font-size: inherit; 
 #  color: #D1D1D1;

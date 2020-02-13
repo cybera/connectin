@@ -30,9 +30,10 @@ auth = dash_auth.BasicAuth(
 )
 
 date_ranger_style = {
-    "width": "70%",
+    "width": "67%",
+    "margin-left": "9%",
     "display": "none",
-    "margin": "0 auto",
+    #"margin": "0 auto",
     "font-family": "Geneva",
     "textAlign": "center",
     "color": "#407DFA"
@@ -40,8 +41,9 @@ date_ranger_style = {
 
 dropdown_style70 = {
     "width": "70%",
-    "display": "inline-block",
-    "margin": "0 auto",
+    "margin-left": "5.5%",
+    #"display": "inline-block",
+    #"margin": "0 auto",
     "textAlign": "center",
     "font-family": "Geneva",
     "color": "#407DFA"
@@ -49,7 +51,8 @@ dropdown_style70 = {
 
 dropdown_style90 = {
     "width": "90%",
-    "display": "inline-block",
+    #"margin-left": "9%",
+    #"display": "flex",
     "margin": "0 auto",
     "textAlign": "center",
     "font-family": "Geneva",
@@ -98,6 +101,7 @@ app.layout = html.Div(
                                     ],
                                     value='DOWNLOAD',
                                     style=dropdown_style70,
+                                    clearable=False,
                                     id="mes_dropdown"
                                 ), ]
                         ),
@@ -133,6 +137,7 @@ app.layout = html.Div(
                                     ],
                                     value='6',
                                     style=dropdown_style70,
+                                    clearable=False,
                                     id='date_dropdown'
                                 ), ]
                         ),
@@ -227,8 +232,7 @@ def render_content(tab):
             html.Div([
                 dcc.Graph(
                     id='graph2-tab1',
-                    style={'height': '70vh'}
-                )
+                    style={'height': '72vh'})
             ])  # ,
             # html.Div([
             #      html.H6('Number of tests'),
@@ -297,7 +301,7 @@ def render_content(tab):
             html.Div([
                 dcc.Graph(
                     id='graph1-tab2',
-		    style={'height': '70vh'}
+		    style={'height': '72vh'}
                 )
             ])
         ])
@@ -385,7 +389,13 @@ def render_content(tab):
                 style_cell={
                     'textAlign': 'center',
                     "font-family": "Geneva"
-                }
+                },
+                style_cell_conditional=[
+                    {'if': {'column_id': 'device_number'},
+                     'width': '20%'},
+                    {'if': {'column_id': 'number_of_tests'},
+                     'width': '20%'},
+                ]
             )
         ])
 
@@ -620,10 +630,12 @@ def show_hide_element(visibility_state):
     d_style = dropdown_style70.copy()
     if visibility_state == 'FROMTO':
         d_style['display'] = 'none'
-        r_style['display'] = 'inline-block'
+       # r_style['display'] = 'inline-block'
+        r_style.pop("display", None)
     elif visibility_state == 'RANGE':
         r_style['display'] = 'none'
-        d_style['display'] = 'inline-block'
+        d_style.pop("display", None)
+        #d_style['display'] = 'inline-block'
     return r_style, d_style
 
 
