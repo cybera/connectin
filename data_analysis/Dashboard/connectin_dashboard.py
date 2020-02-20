@@ -33,7 +33,6 @@ date_ranger_style = {
     "width": "67%",
     "margin-left": "9%",
     "display": "none",
-    #"margin": "0 auto",
     "font-family": "Geneva",
     "textAlign": "center",
     "color": "#407DFA"
@@ -42,8 +41,6 @@ date_ranger_style = {
 dropdown_style70 = {
     "width": "70%",
     "margin-left": "5.5%",
-    #"display": "inline-block",
-    #"margin": "0 auto",
     "textAlign": "center",
     "font-family": "Geneva",
     "color": "#407DFA"
@@ -51,8 +48,6 @@ dropdown_style70 = {
 
 dropdown_style90 = {
     "width": "90%",
-    #"margin-left": "9%",
-    #"display": "flex",
     "margin": "0 auto",
     "textAlign": "center",
     "font-family": "Geneva",
@@ -79,14 +74,13 @@ app.layout = html.Div(
         html.Div(
             [
                 # html.Img(  Cybera logo?
-                #    src=app.get_asset_url("dash-logo.png"), className="plotly-logo"
+                #    src=app.get_asset_url("logo.png"), className="cybera-logo"
                 # ),
                 html.H1(children="ConnectIN"),
                 description(),
                 html.Div(
                     # Empty child function for the callback - save intermediate data
                     html.Div(id='intermediate-value', style={'display': 'none'})
-                    # children='Enter a value and press submit')#
                 ),
                 html.Div(
                     [
@@ -443,7 +437,7 @@ def update_graph_tab1(jsonified_data, test_type, device):
         if not subset.empty:
             subset["time"] = pd.to_datetime(subset["time"]).apply(lambda x: x.tz_localize(None))
             device_numbers = subset["SK_PI"].unique()
-            figure = get_fig_raw_data_6_months(subset, device_numbers, " ")
+            figure = get_fig_raw_data_all(subset, device_numbers, " ")
     return figure
 
 
@@ -476,7 +470,7 @@ def update_graph_tab2(jsonified_data, test_type, device, aggregated_by, graph_ty
 
             stat = subset[[aggregated_by, "result"]].groupby(aggregated_by).agg(["mean", "max", "size"])[
                 "result"]
-            figure = get_fig_agg_6_months(subset, stat, test_type, aggregated_by, graph_type,
+            figure = get_fig_agg_all(subset, stat, test_type, aggregated_by, graph_type,
                                           subset[aggregated_by].sort_values().unique(),
                                           " ")
     return figure
