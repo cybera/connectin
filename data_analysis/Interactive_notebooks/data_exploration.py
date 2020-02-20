@@ -33,17 +33,19 @@ colors_plotly = pd.read_csv("/home/connectin/data_analysis/Interactive_notebooks
 colors = colors_plotly[0]
 
 coordinates_path = "/home/connectin/data_analysis/coordinates2.csv"
+main_config_path = "/home/connectin/config.json"
+timezone_path = "/home/connectin/data_analysis/timezone_by_device.csv"
 
 limits = {"DOWNLOAD":50,"UPLOAD":10}
 colors_iperf_speedtest = {"iperf":colors[3],"speedtest":colors[2]}
 
-with open('/home/connectin/config.json', 'r') as f:
+with open(main_config_path, 'r') as f:
     main_config = json.load(f)
 
 timezone_common = main_config['timezone']
 timezones_by_device =  {}
-if path.exists("/home/connectin/data_analysis/timezone_by_device.csv"):
-    df1 = pd.read_csv("/home/connectin/data_analysis/timezone_by_device.csv")
+if path.exists(timezone_path):
+    df1 = pd.read_csv(timezone_path)
     timezones_by_device = df1.set_index("device_number").to_dict()["Timezone"]
 
 test_size = 100
@@ -74,7 +76,7 @@ def connect_to_influxdb():
 
 def get_dataframe_from_influxdb(client_df, query_influx, table_name):
     result_query = client_df.query(query_influx)
-    result=pd.DataFrame()
+    result = pd.DataFrame()
     if result_query:
         result=result_query[table_name]
         result.reset_index(level=0, inplace=True)
@@ -88,6 +90,28 @@ def get_dataframe_from_influxdb(client_df, query_influx, table_name):
         result['SK_PI']=pd.to_numeric(result['SK_PI'])
     return result
 
+def transform_df(df_orig):
+    df = df_orig.copy()
+ 
+   #common timezone
+    df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
+
+    #timezone by device
+    for key in timezones_by_device.keys():
+        if not df.loc[df["SK_PI"]==key,'time'].empty:
+              df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
+
+    #removing timezone information  
+    df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
+
+    #we will sort by time to have earliest time first
+    df = df.sort_values("time")
+
+    #converting iperf test results into format comparable to speedtest
+    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
+    df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
+    return df
+    
 def get_all_data(client_df):
     query1 = "SELECT * FROM SPEEDTEST_IPERF_PING ORDER BY time;"
     df1 = get_dataframe_from_influxdb(client_df=client_df,query_influx=query1,table_name='SPEEDTEST_IPERF_PING')
@@ -115,27 +139,9 @@ def get_all_data(client_df):
         df = pd.concat([df,df3])
     
     if not df.empty:
-        #device number should be numeric for proper sorting
-        df['SK_PI']=pd.to_numeric(df['SK_PI'])
-
-        #common timezone
-        df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
-
-        #timezone by device
-        for key in timezones_by_device.keys():
-            if not df.loc[df["SK_PI"]==key,'time'].empty:
-                df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
-
-        #removing timezone information  
-        df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
-
-        #we will sort by time to have earliest time first
-        df = df.sort_values("time")
-
-        #converting iperf test results into format comparable to speedtest
-        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
-        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
-    return df   
+        return transform_df(df)
+    return pd.DataFrame(columns = ['time', 'IP', 'result', 'PI_MAC', 'PROVIDER', 'PROVINCE', 'SK_PI',
+       'TEST_SERVER', 'test_type', 'MES_TYPE']) 
 
 def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
     
@@ -155,37 +161,15 @@ def measurment_by_range(client_df,mes_type,from_date=0,to_date=0):
     
     
     query = "SELECT * FROM "+mes_dict[mes_type]+" WHERE time <= '"+starting_point+"' AND time >= '"+end_point+"' ORDER BY time;"
-    #print( query)
+
     df = get_dataframe_from_influxdb(client_df=client_df,query_influx=query,table_name=mes_dict[mes_type])
-    #print(df)
+    
     if not df.empty:
         df["MES_TYPE"]=mes_type
         df.rename(columns={mes_type:"result"}, inplace=True)
-
-        #device number should be numeric for proper sorting
-        df['SK_PI']=pd.to_numeric(df['SK_PI'])
-
-        #common timezone
-        df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time']= df.loc[~df["SK_PI"].isin(timezones_by_device.keys()),'time'].dt.tz_localize('UTC').dt.tz_convert(timezone_common)
-
-        #timezone by device
-        for key in timezones_by_device.keys():
-            if not df.loc[df["SK_PI"]==key,'time'].empty:
-                   df.loc[df["SK_PI"]==key,'time']= df.loc[df["SK_PI"]==key,"time"].dt.tz_localize('UTC').dt.tz_convert(timezones_by_device[key])
-
-        #removing timezone information  
-        df["time"] = df["time"].apply(lambda x:x.tz_localize(None))
-
-        #we will sort by time to have earliest time first
-        df = df.sort_values("time")
-
-        #converting iperf test results into format comparable to speedtest
-        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="DOWNLOAD") ,"result"]*0.001
-        df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"] = df.loc[(df["PROVIDER"]=="iperf") & (df["MES_TYPE"]=="UPLOAD") ,"result"]*0.001
-    else:
-        df = pd.DataFrame(columns = ['time', 'IP', 'result', 'PI_MAC', 'PROVIDER', 'PROVINCE', 'SK_PI',
+        return transform_df(df)
+    return pd.DataFrame(columns = ['time', 'IP', 'result', 'PI_MAC', 'PROVIDER', 'PROVINCE', 'SK_PI',
        'TEST_SERVER', 'test_type', 'MES_TYPE'])
-    return df    
 
 def get_fig_raw_data_by_device(subset,subset1):
         fig = go.Figure()
@@ -225,7 +209,7 @@ def get_fig_raw_data_by_device(subset,subset1):
         )
         return fig
     
-def get_fig_raw_data_6_months(subset,device_numbers, title = "Raw data: iperf and speedtest for all devices over the last 6 months"):
+def get_fig_raw_data_all(subset,device_numbers, title = "Raw data: iperf and speedtest for all devices over the last 6 months"):
     fig = go.Figure()
     for device in device_numbers:
         subset1= subset[subset["SK_PI"]==device]
@@ -325,20 +309,14 @@ def get_fig_agg_by_device(subset,subset1,res,res1,aggregated_by,graph_type, meas
                        marker=dict(color=colors_iperf_speedtest["speedtest"], opacity=0.7)),row=1, col=1)
          
     else:
-        fig.add_trace(go.Bar(opacity=0.5,
-                      x=list(res.index),y=res[graph_type],name="iperf",marker=dict(color=colors_iperf_speedtest["iperf"],line_color=colors[2],
-                  line_width=2)),
-                      row=1, col=1)
-        fig.add_trace(go.Bar(opacity=0.5,
-                      x=list(res1.index),y=res1[graph_type],name="speedtest",marker=dict(color=colors_iperf_speedtest["speedtest"],line_color=colors[3],line_width=2)),
-                      row=1, col=1)
-    fig.add_trace(go.Bar(opacity=0.5,
-                      x=list(res.index),y=res["size"],name="iperf",marker=dict(color=colors_iperf_speedtest["iperf"])),row=2, col=1)
-    fig.add_trace(go.Bar(opacity=0.5,
-                      x=list(res1.index),y=res1["size"],name="speedtest",marker=dict(color=colors_iperf_speedtest["speedtest"])),row=2, col=1)
+        fig.add_trace(go.Bar(opacity=0.5,                    x=list(res.index),y=res[graph_type],name="iperf",marker=dict(color=colors_iperf_speedtest["iperf"],line_color=colors[2],line_width=2)),row=1, col=1)
+        
+        fig.add_trace(go.Bar(opacity=0.5,                      x=list(res1.index),y=res1[graph_type],name="speedtest",marker=dict(color=colors_iperf_speedtest["speedtest"],line_color=colors[3],line_width=2)), row=1, col=1)
+        
+    fig.add_trace(go.Bar(opacity=0.5,                    x=list(res.index),y=res["size"],name="iperf",marker=dict(color=colors_iperf_speedtest["iperf"])),row=2, col=1)
     
+    fig.add_trace(go.Bar(opacity=0.5,                     x=list(res1.index),y=res1["size"],name="speedtest",marker=dict(color=colors_iperf_speedtest["speedtest"])),row=2, col=1)
     
-    #fig.update_layout(xaxis=dict(tickmode='linear') )
     if measurement_type in ["DOWNLOAD","UPLOAD"]:
         fig.add_trace(go.Scatter(
                       x=sort_values,y=[limits[measurement_type]] * len(sort_values),
@@ -348,25 +326,21 @@ def get_fig_agg_by_device(subset,subset1,res,res1,aggregated_by,graph_type, meas
     fig.update_layout(showlegend=False)
     return fig
 
-def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type,sort_values, plot_title):    
-    color_n=3
-    if test_type=="speedtest":
-        color_n=2
+def get_fig_agg_all(subset,res,test_type,aggregated_by,graph_type,sort_values, plot_title):    
     fig =make_subplots(
     rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.2,row_heights=[0.7,0.3],
         x_title=aggregated_by, 
         subplot_titles=(plot_title, "Number of tests")
     )
-    fig.update_layout(yaxis=dict(title="Mbps"))#,xaxis=dict(type="category"))
+    fig.update_layout(yaxis=dict(title="Mbps"))
     
-    fig.add_trace(go.Bar(opacity=0.5,
-                      x=list(res.index),y=res["size"],name="number of tests",marker=dict(color=colors[color_n])),row=2, col=1)
+    fig.add_trace(go.Bar(opacity=0.5,x=list(res.index),y=res["size"],name="number of tests",marker=dict(color=colors_iperf_speedtest[test_type])),row=2, col=1)
               
     if graph_type == "boxplot":
         for val in sort_values:
             fig.add_trace(
                 go.Box(y=subset[subset[aggregated_by]==val]["result"], name=str(val),
-                       marker=dict(color=colors[color_n], opacity=0.7)),row=1, col=1)
+                       marker=dict(color=colors_iperf_speedtest[test_type], opacity=0.7)),row=1, col=1)
         fig.update_layout(showlegend=False)
          
     else:
@@ -376,9 +350,8 @@ def get_fig_agg_6_months(subset,res,test_type,aggregated_by,graph_type,sort_valu
                       x=subset1[aggregated_by],y=subset1["result"],marker=dict(color=colors[device]),name = "device " + str(device)),
                       row=1, col=1)
         fig.add_trace(go.Scatter(mode="lines+markers",
-                      x=list(res.index),y=res[graph_type],name=graph_type,marker=dict(color=colors[color_n])),row=1, col=1)
+                      x=list(res.index),y=res[graph_type],name=graph_type,marker=dict(color=colors_iperf_speedtest[test_type])),row=1, col=1)
         
-    #fig.update_layout(xaxis=dict(tickmode='linear') )
     fig.update_xaxes(tickmode='linear', row=2, col=1)
     measurement_type = subset["MES_TYPE"].unique()[0]
     if measurement_type=="PING":
@@ -438,7 +411,6 @@ def get_fig_map(stat1,color_by2,plot_title):
                     color='rgba(102, 102, 102)'
                 ),
                 colorscale='Jet',
-                #colorscale = scl,
                 cmin = 0,
                 color = stat1[color_by2],
                 cmax = stat1[color_by2].max(),
@@ -464,12 +436,10 @@ def get_fig_map(stat1,color_by2,plot_title):
                 ),
                  lonaxis = dict(
                     gridwidth = 2,
-                    #range= [ -120, -90 ],
                     range= [ -140, -55 ],
                     dtick = 10
                 ),
                 lataxis = dict (
-                    #range= [ 47.0, 60.0 ],
                     range= [ 47.0, 72.0 ],
                     dtick = 10
                 )
@@ -513,7 +483,6 @@ def get_ttest_device(data_list,treshold):
 
 def summary_stat(df,treshold=0):
     res= df.groupby(["MES_TYPE","SK_PI"])["result"].agg(["size","mean","std","median","min","max",]).reset_index()
-    #print(res)
     if treshold>0:
         res1=df[df["result"]>=treshold]
         if not res1.empty:
