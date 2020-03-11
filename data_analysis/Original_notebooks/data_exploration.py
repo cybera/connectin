@@ -403,7 +403,7 @@ def simple_boxplot(dataframe,plot_value,sort_value,title, ytitle="Device Number"
         data.append(boughtline)
     layout = go.Layout(
                 title=title,
-                xaxis=dict(title=xtitle),
+                xaxis=dict(title=xtitle,tickmode='linear'),
                 yaxis=dict(title=ytitle, rangemode='tozero'),
             )
 
